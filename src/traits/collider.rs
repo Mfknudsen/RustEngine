@@ -7,8 +7,7 @@ pub trait BoxCollider {
     fn x_size(&self) -> f32;
     fn y_size(&self) -> f32;
 
-    fn x_center(&self) -> f32;
-    fn y_center(&self) -> f32;
+    fn check_against_map(&mut self, map_colliders: &mut Vec<MapCollider>);
 
-    fn check_against_map(&self, map_colliders: &mut Vec<MapCollider>);
+    fn point_in_box(&self, x: i32, y: i32) -> bool;
 }

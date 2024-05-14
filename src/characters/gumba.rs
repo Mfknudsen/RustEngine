@@ -1,11 +1,18 @@
-use sdl2::render::WindowCanvas;
-use crate::DrawBox;
-use crate::map::map_collider::MapCollider;
-use crate::traits::collider::BoxCollider;
-use crate::traits::drawer::Drawer;
-use crate::traits::transform::Transform;
+use sdl2::{
+    pixels::Color,
+    render::WindowCanvas
+};
+use crate::{
+    DrawBox,
+    get_delta_time,
+    map::map_collider::MapCollider,
+    traits::character::Character,
+    traits::collider::{BoxCollider},
+    traits::drawer::Drawer,
+    traits::transform::Transform
+};
 
-const TURTLE_MOVE_SPEED: f32 = 500.0;
+const GUMBA_MOVE_SPEED: f32 = 250.0;
 
 pub struct Gumba {
     x: f32,
@@ -15,7 +22,8 @@ pub struct Gumba {
     box_x_size: f32,
     box_y_size: f32,
     boxes: Vec<DrawBox>,
-    grounded: bool,
+    walk_direction: f32,
+    dead: bool,
 }
 
 impl Gumba {
@@ -27,15 +35,18 @@ impl Gumba {
             y_velocity: 0.0,
             box_x_size: 50.0,
             box_y_size: 50.0,
-            grounded: false,
             boxes: Self::setup_boxes(),
+            walk_direction: -1.0,
+            dead: false,
         }
     }
 
-    fn setup_boxes() -> Vec<DrawBox>{
+    fn setup_boxes() -> Vec<DrawBox> {
         let mut result = Vec::new();
 
-        return result
+        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GRAY));
+
+        return result;
     }
 }
 
@@ -48,13 +59,42 @@ impl Transform for Gumba {
         self.y
     }
 
+    fn set_x(&mut self, set: f32) {
+        self.x = set;
+    }
+
+    fn set_y(&mut self, set: f32) {
+        self.y = set;
+    }
+
+    fn get_x_velocity(&self) -> f32 {
+        self.x_velocity
+    }
+
+    fn get_y_velocity(&self) -> f32 {
+        self.y_velocity
+    }
+
+    fn set_x_velocity(&mut self, set: f32) {
+        self.x_velocity = set;
+    }
+
+    fn set_y_velocity(&mut self, set: f32) {
+        self.y_velocity = set;
+    }
+
     fn add_force(&mut self, x: f32, y: f32) {
+        self.x_velocity += x;
+        self.y_velocity += y;
     }
 }
 
 impl Drawer for Gumba {
     fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
-     }
+        for box_obj in &mut self.boxes {
+            box_obj.draw(self.x, self.y, canvas).expect("ERROR");
+        }
+    }
 }
 
 impl BoxCollider for Gumba {
@@ -74,15 +114,77 @@ impl BoxCollider for Gumba {
         self.box_y_size
     }
 
-    fn x_center(&self) -> f32 {
-        todo!()
+    fn check_against_map(&mut self, map_colliders: &mut Vec<MapCollider>) {
+        let move_x = self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+
+        for col in &mut map_colliders.iter() {
+            if self.y_velocity > 0.0 &&
+                col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) &&
+                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
+                self.y = col.y_position() - self.y_size();
+                self.y_velocity = 0.0;
+            } else if self.y_velocity < 0.0 &&
+                col.point_in_box(self.x as i32, self.y as i32) &&
+                col.point_in_box((self.x + self.x_size()) as i32, self.y as i32) {
+                self.y = col.y_position() + col.y_size();
+                self.y_velocity = 0.0;
+            }
+
+            if self.x_velocity + move_x > 0.0 &&
+                col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) &&
+                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
+                self.x = col.x_position() - self.x_size();
+                self.x_velocity = 0.0;
+            } else if self.x_velocity + move_x < 0.0 &&
+                col.point_in_box(self.x as i32, self.y as i32) &&
+                col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32) {
+                self.x = col.x_position() + col.x_size();
+                self.x_velocity = 0.0;
+            }
+
+            if self.x_velocity + move_x > 0.0 &&
+                (col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) ||
+                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
+                self.x = col.x_position() - self.x_size();
+                self.x_velocity = 0.0;
+            } else if self.x_velocity + move_x < 0.0 &&
+                (col.point_in_box(self.x as i32, self.y as i32) ||
+                    col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32)) {
+                self.x = col.x_position() + col.x_size();
+                self.x_velocity = 0.0;
+            }
+
+            if self.y_velocity > 0.0 &&
+                (col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) ||
+                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
+                self.y = col.y_position() - self.y_size();
+                self.y_velocity = 0.0;
+            } else if self.y_velocity < 0.0 &&
+                (col.point_in_box(self.x as i32, self.y as i32) ||
+                    col.point_in_box((self.x + self.x_size()) as i32, self.y as i32)) {
+                self.y = col.y_position() + col.y_size();
+                self.y_velocity = 0.0;
+            }
+        }
     }
 
-    fn y_center(&self) -> f32 {
+    fn point_in_box(&self, x: i32, y: i32) -> bool {
         todo!()
     }
+}
 
-    fn check_against_map(&self, map_colliders: &mut Vec<MapCollider>) {
-        todo!()
+impl Character for Gumba {
+    fn update(&mut self) {
+        self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+
+        self.x += self.x_velocity * get_delta_time();
+        self.y += self.y_velocity * get_delta_time();
+
+        let x = self.x_velocity;
+        let y = self.y_velocity;
+    }
+
+    fn should_remove(&self) -> bool {
+        self.dead
     }
 }
