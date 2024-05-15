@@ -128,15 +128,28 @@ fn main() -> Result<(), String> {
         ///
         /// Gravity force on all characters
         ///
+        player.add_force(0.0, GRAVITY * get_delta_time());
         for mut g in &mut gumbas {
             g.add_force(0.0, GRAVITY * get_delta_time())
         }
-        player.add_force(0.0, GRAVITY * get_delta_time());
 
         ///
         /// Updating characters
         ///
         player.update();
+
+        ///
+        /// Remove defeated
+        ///
+        for i in 0..(gumbas.len() - 1) {
+            if !gumbas[gumbas.len() - 1 - i].should_remove() {
+                gumbas.remove(gumbas.len() - 1 - i);
+            }
+        }
+
+        ///
+        /// Continue updating characters
+        ///
         for mut g in &mut gumbas {
             g.update();
         }
@@ -147,15 +160,6 @@ fn main() -> Result<(), String> {
         player.check_against_map(&mut static_map_colliders);
         for mut g in &mut gumbas {
             g.check_against_map(&mut static_map_colliders)
-        }
-
-        ///
-        /// Remove defeated
-        ///
-        for i in 0..(gumbas.len() -1) {
-            if !gumbas[gumbas.len() - 1 - i].should_remove() {
-                gumbas.remove(gumbas.len() - 1 - i);
-            }
         }
 
         ///

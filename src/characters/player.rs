@@ -3,11 +3,10 @@ use sdl2::{keyboard::Keycode, pixels::Color, render::WindowCanvas};
 use crate::{
     DrawBox,
     get_delta_time,
-    map::map_collider::MapCollider,
-    traits::{collider::BoxCollider, drawer::Drawer, transform::Transform, character::Character}
+    traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
 };
 
-const PLAYER_MOVE_SPEED: f32 = 1000.0;
+const PLAYER_MOVE_SPEED: f32 = 1750.0;
 
 pub struct Player {
     x: f32,
@@ -112,12 +111,35 @@ impl Drawer for Player {
 }
 
 impl BoxCollider for Player {
+    fn move_x(&self) -> f32 {
+        let mut move_x: f32 = 0.0;
+        if self.keyboard_a {
+            move_x += -1.0;
+        }
+        if self.keyboard_d {
+            move_x += 1.0;
+        }
+        self.x_velocity + move_x * PLAYER_MOVE_SPEED * get_delta_time()
+    }
+
+    fn move_y(&self) -> f32 {
+        self.y_velocity
+    }
+
     fn x_position(&self) -> f32 {
         self.x
     }
 
     fn y_position(&self) -> f32 {
         self.y
+    }
+
+    fn set_x_position(&mut self, set: f32) {
+        self.x = set;
+    }
+
+    fn set_y_position(&mut self, set: f32) {
+        self.y = set;
     }
 
     fn x_size(&self) -> f32 {
@@ -128,75 +150,17 @@ impl BoxCollider for Player {
         self.box_y_size
     }
 
-    fn check_against_map(&mut self, map_colliders: &mut Vec<MapCollider>) {
-        let mut move_x: f32 = 0.0;
-        if self.keyboard_a {
-            move_x += -1.0;
-        }
-        if self.keyboard_d {
-            move_x += 1.0;
-        }
-        move_x *= PLAYER_MOVE_SPEED * get_delta_time();
-
-        for col in &mut map_colliders.iter() {
-            if self.y_velocity > 0.0 &&
-                col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) &&
-                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
-                self.y = col.y_position() - self.y_size();
-                self.y_velocity = 0.0;
-                self.grounded = true;
-
-            } else if self.y_velocity < 0.0 &&
-                col.point_in_box(self.x as i32, self.y as i32) &&
-                col.point_in_box((self.x + self.x_size()) as i32, self.y as i32) {
-                self.y = col.y_position() + col.y_size();
-                self.y_velocity = 0.0;
-            }
-
-            if self.x_velocity + move_x > 0.0 &&
-                col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) &&
-                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
-                self.x = col.x_position() - self.x_size();
-                self.x_velocity = 0.0;
-            } else if self.x_velocity + move_x < 0.0 &&
-                col.point_in_box(self.x as i32, self.y as i32) &&
-                col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32) {
-                self.x = col.x_position() + col.x_size();
-                self.x_velocity = 0.0;
-            }
-
-            if self.x_velocity + move_x > 0.0 &&
-                (col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) ||
-                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
-                self.x = col.x_position() - self.x_size();
-                self.x_velocity = 0.0;
-            } else if self.x_velocity + move_x < 0.0 &&
-                (col.point_in_box(self.x as i32, self.y as i32) ||
-                    col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32)) {
-                self.x = col.x_position() + col.x_size();
-                self.x_velocity = 0.0;
-            }
-
-            if self.y_velocity > 0.0 &&
-                (col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) ||
-                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
-                self.y = col.y_position() - self.y_size();
-                self.y_velocity = 0.0;
-                self.grounded = true;
-            } else if self.y_velocity < 0.0 &&
-                (col.point_in_box(self.x as i32, self.y as i32) ||
-                    col.point_in_box((self.x + self.x_size()) as i32, self.y as i32)) {
-                self.y = col.y_position() + col.y_size();
-                self.y_velocity = 0.0;
-            }
-        }
+    fn set_x_velocity(&mut self, set: f32) {
+        self.x_velocity = set;
     }
 
-    fn point_in_box(&self, x: i32, y: i32) -> bool {
-        x > self.x as i32 &&
-            y > self.y as i32 &&
-            x < (self.x + self.x_size()) as i32 &&
-            y < (self.y + self.y_size()) as i32
+    fn set_y_velocity(&mut self, set: f32)
+    {
+        self.y_velocity = set;
+    }
+
+    fn set_grounded(&mut self, set: bool) {
+        self.grounded = set;
     }
 }
 

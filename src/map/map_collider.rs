@@ -34,17 +34,6 @@ impl BoxCollider for MapCollider {
     fn y_size(&self) -> f32 {
         self.y_size
     }
-
-    fn check_against_map(&mut self, _map_colliders: &mut Vec<MapCollider>) {
-        //Map shouldn't check against map
-    }
-
-    fn point_in_box(&self, x: i32, y: i32) -> bool {
-        x > self.x as i32 &&
-            y > self.y as i32 &&
-            x < (self.x + self.x_size()) as i32 &&
-            y < (self.y + self.y_size()) as i32
-    }
 }
 
 impl BoxCollider for & MapCollider {

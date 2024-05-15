@@ -1,15 +1,16 @@
 use sdl2::{
     pixels::Color,
-    render::WindowCanvas
+    render::WindowCanvas,
 };
+
 use crate::{
     DrawBox,
-    get_delta_time,
-    map::map_collider::MapCollider,
+    get_delta_time
+    ,
     traits::character::Character,
-    traits::collider::{BoxCollider},
+    traits::collider::BoxCollider,
     traits::drawer::Drawer,
-    traits::transform::Transform
+    traits::transform::Transform,
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -98,12 +99,28 @@ impl Drawer for Gumba {
 }
 
 impl BoxCollider for Gumba {
+    fn move_x(&self) -> f32 {
+        self.x_velocity + self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()
+    }
+
+    fn move_y(&self) -> f32 {
+        self.y_velocity
+    }
+
     fn x_position(&self) -> f32 {
         self.x
     }
 
     fn y_position(&self) -> f32 {
         self.y
+    }
+
+    fn set_x_position(&mut self, set: f32) {
+        self.x = set;
+    }
+
+    fn set_y_position(&mut self, set: f32) {
+        self.y = set;
     }
 
     fn x_size(&self) -> f32 {
@@ -114,62 +131,12 @@ impl BoxCollider for Gumba {
         self.box_y_size
     }
 
-    fn check_against_map(&mut self, map_colliders: &mut Vec<MapCollider>) {
-        let move_x = self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-
-        for col in &mut map_colliders.iter() {
-            if self.y_velocity > 0.0 &&
-                col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) &&
-                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
-                self.y = col.y_position() - self.y_size();
-                self.y_velocity = 0.0;
-            } else if self.y_velocity < 0.0 &&
-                col.point_in_box(self.x as i32, self.y as i32) &&
-                col.point_in_box((self.x + self.x_size()) as i32, self.y as i32) {
-                self.y = col.y_position() + col.y_size();
-                self.y_velocity = 0.0;
-            }
-
-            if self.x_velocity + move_x > 0.0 &&
-                col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) &&
-                col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32) {
-                self.x = col.x_position() - self.x_size();
-                self.x_velocity = 0.0;
-            } else if self.x_velocity + move_x < 0.0 &&
-                col.point_in_box(self.x as i32, self.y as i32) &&
-                col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32) {
-                self.x = col.x_position() + col.x_size();
-                self.x_velocity = 0.0;
-            }
-
-            if self.x_velocity + move_x > 0.0 &&
-                (col.point_in_box((self.x + self.box_x_size) as i32, self.y as i32) ||
-                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
-                self.x = col.x_position() - self.x_size();
-                self.x_velocity = 0.0;
-            } else if self.x_velocity + move_x < 0.0 &&
-                (col.point_in_box(self.x as i32, self.y as i32) ||
-                    col.point_in_box(self.x as i32, (self.y + self.box_y_size) as i32)) {
-                self.x = col.x_position() + col.x_size();
-                self.x_velocity = 0.0;
-            }
-
-            if self.y_velocity > 0.0 &&
-                (col.point_in_box((self.x) as i32, (self.y + self.box_y_size) as i32) ||
-                    col.point_in_box((self.x + self.box_x_size) as i32, (self.y + self.box_y_size) as i32)) {
-                self.y = col.y_position() - self.y_size();
-                self.y_velocity = 0.0;
-            } else if self.y_velocity < 0.0 &&
-                (col.point_in_box(self.x as i32, self.y as i32) ||
-                    col.point_in_box((self.x + self.x_size()) as i32, self.y as i32)) {
-                self.y = col.y_position() + col.y_size();
-                self.y_velocity = 0.0;
-            }
-        }
+    fn set_x_velocity(&mut self, set: f32) {
+        self.x_velocity = set;
     }
 
-    fn point_in_box(&self, x: i32, y: i32) -> bool {
-        todo!()
+    fn set_y_velocity(&mut self, set: f32) {
+        self.y_velocity = set;
     }
 }
 
@@ -179,9 +146,6 @@ impl Character for Gumba {
 
         self.x += self.x_velocity * get_delta_time();
         self.y += self.y_velocity * get_delta_time();
-
-        let x = self.x_velocity;
-        let y = self.y_velocity;
     }
 
     fn should_remove(&self) -> bool {
