@@ -10,11 +10,12 @@ use crate::{
     traits::collider::BoxCollider,
     traits::drawer::Drawer,
     traits::transform::Transform,
+    traits::npc::NPC,
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
 
-pub struct Gumba {
+pub struct Gura {
     x: f32,
     y: f32,
     x_velocity: f32,
@@ -24,9 +25,16 @@ pub struct Gumba {
     boxes: Vec<DrawBox>,
     walk_direction: f32,
     dead: bool,
+    state: State,
 }
 
-impl Gumba {
+pub enum State {
+    Idle,
+    Move,
+    Attack,
+}
+impl Gura {
+
     pub(crate) fn new(x_start: f32, y_start: f32) -> Self {
         Self {
             x: x_start,
@@ -38,6 +46,7 @@ impl Gumba {
             boxes: Self::setup_boxes(),
             walk_direction: -1.0,
             dead: false,
+            state: State::Idle,
         }
     }
 
@@ -50,7 +59,7 @@ impl Gumba {
     }
 }
 
-impl Transform for Gumba {
+impl Transform for Gura {
     fn get_x(&self) -> f32 {
         self.x
     }
@@ -89,7 +98,7 @@ impl Transform for Gumba {
     }
 }
 
-impl Drawer for Gumba {
+impl Drawer for Gura {
     fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
         for box_obj in &mut self.boxes {
             box_obj.draw(self.x, self.y, canvas).expect("ERROR");
@@ -97,7 +106,7 @@ impl Drawer for Gumba {
     }
 }
 
-impl BoxCollider for Gumba {
+impl BoxCollider for Gura {
     fn move_x(&self) -> f32 {
         self.x_velocity + self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()
     }
@@ -139,10 +148,13 @@ impl BoxCollider for Gumba {
     }
 }
 
-impl Character for Gumba {
+impl NPC for Gura{
+
+}
+
+impl Character for Gura {
     fn update(&mut self) {
         self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-
         self.x += self.x_velocity * get_delta_time();
         self.y += self.y_velocity * get_delta_time();
     }
@@ -150,4 +162,5 @@ impl Character for Gumba {
     fn should_remove(&self) -> bool {
         self.dead
     }
+
 }

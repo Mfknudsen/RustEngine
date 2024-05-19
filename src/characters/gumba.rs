@@ -11,6 +11,7 @@ use crate::{
     traits::collider::BoxCollider,
     traits::drawer::Drawer,
     traits::transform::Transform,
+    traits::npc::NPC,
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -45,7 +46,7 @@ impl Gumba {
     fn setup_boxes() -> Vec<DrawBox> {
         let mut result = Vec::new();
 
-        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GRAY));
+        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GREEN));
 
         return result;
     }
@@ -139,7 +140,8 @@ impl BoxCollider for Gumba {
         self.y_velocity = set;
     }
 }
-
+impl NPC for Gumba{
+}
 impl Character for Gumba {
     fn update(&mut self) {
         self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();

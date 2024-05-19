@@ -204,6 +204,8 @@ fn update_delta_time() {
     }
 }
 
+
+
 fn update_global_player_offset(player: &Player) {
     let lerp: f32 = 0.9;
     let speed: f32 = 100.0;
