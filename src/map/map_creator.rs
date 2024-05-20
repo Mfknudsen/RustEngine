@@ -2,13 +2,13 @@ use sdl2::pixels::Color;
 use rand::Rng;
 
 use crate::{
-    characters::{gumba::Gumba, player::Player},
+    characters::{gumba::Gumba,gura::Gura, player::Player},
     traits::npc::NPC,
     DrawBox,
     map::map_collider::MapCollider,
     WINDOW_HEIGHT,
 };
-use crate::characters::gura::Gura;
+
 
 pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<Box<dyn NPC>>) {
     ///
@@ -46,8 +46,10 @@ pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<
 
     let mut turtles: Vec<Box<dyn NPC>> = Vec::new();
 
-    turtles.push(Box::new(Gumba::new(350.0, 500.0)));
-    turtles.push(Box::new(Gumba::new(450.0, 500.0)));
+    turtles.push(Box::new(Gura::new(200.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(300.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(440.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(360.0, 500.0)));
 
     return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, turtles);
 }

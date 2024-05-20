@@ -5,8 +5,7 @@ use sdl2::{
 
 use crate::{
     DrawBox,
-    get_delta_time
-    ,
+    get_delta_time,
     traits::character::Character,
     traits::collider::BoxCollider,
     traits::drawer::Drawer,
@@ -145,7 +144,6 @@ impl NPC for Gumba{
 impl Character for Gumba {
     fn update(&mut self) {
         self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-
         self.x += self.x_velocity * get_delta_time();
         self.y += self.y_velocity * get_delta_time();
     }

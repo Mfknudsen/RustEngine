@@ -1,6 +1,7 @@
 use crate::traits::character::Character;
 use crate::traits::transform::Transform;
 use crate::traits::collider::BoxCollider;
-pub trait NPC: Character + Transform{
+use crate::traits::drawer::Drawer;
+pub trait NPC: Character + Transform + BoxCollider+ Drawer{
 
 }

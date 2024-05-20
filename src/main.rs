@@ -13,6 +13,7 @@ use sdl2::{
     VideoSubsystem,
     video::Window,
 };
+use sdl2::libc::printf;
 
 use crate::{
     characters::player::Player,
@@ -36,9 +37,11 @@ static mut DELTA_TIME: f32 = 0.0;
 
 static mut PREVIOUS_TIME: f32 = 0.0;
 
+
 fn main() -> Result<(), String> {
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
+
 
     let window: Window = video_subsystem
         .window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -85,6 +88,8 @@ fn main() -> Result<(), String> {
         ///
         /// Reading player input events
         ///
+
+
         for event in event_pump.poll_iter() {
             match event { //Matches given pattern or keypress to event
                 Event::Quit { .. } //Quit event for closing window
@@ -141,9 +146,13 @@ fn main() -> Result<(), String> {
         ///
         /// Remove defeated
         ///
-        for i in 0..(gumbas.len() - 1) {
-            if !gumbas[gumbas.len() - 1 - i].should_remove() {
-                gumbas.remove(gumbas.len() - 1 - i);
+        ///
+
+        let gumbalen = gumbas.len() -1;
+        for i in 0..(gumbalen) {
+            if gumbas[gumbalen - i].should_remove() {
+                println!("{}", gumbas[gumbalen - i].get_x());
+                gumbas.remove(gumbalen - i);
             }
         }
 
