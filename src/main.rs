@@ -236,8 +236,6 @@ fn main() -> Result<(), String> {
 
         player.draw_on_canvas(&mut canvas);
 
-        canvas.present(); //Updates canvas
-
         std::thread::sleep(Duration::from_millis(1));
     }
 
