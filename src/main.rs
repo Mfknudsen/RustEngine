@@ -13,11 +13,13 @@ use sdl2::{
 
 use crate::{
     characters::player::Player,
+    functions::name,
     traits::character::Character,
     traits::{collider::BoxCollider, drawer::Drawer, transform::Transform},
 };
 
 mod characters;
+mod functions;
 mod map;
 mod traits;
 
@@ -34,36 +36,7 @@ static mut DELTA_TIME: f32 = 0.0;
 static mut PREVIOUS_TIME: f32 = 0.0;
 
 fn main() -> Result<(), String> {
-    fn get_name_input() -> String {
-        loop {
-            print!("Write your name: ");
-            io::stdout().flush().expect("Failed to flush stdout");
-
-            let mut name_input = String::new();
-            io::stdin()
-                .read_line(&mut name_input)
-                .expect("Failed to read line");
-            return name_input;
-        }
-    }
-
-    fn handle_string(name_input: String) -> String {
-        let trimmed_name = name_input.trim();
-
-        if !trimmed_name.is_empty() {
-            let first_char = &trimmed_name[0..1].to_uppercase();
-            let remaining_chars = &trimmed_name[1..];
-            let modified_name = format!("{}{}", first_char, remaining_chars);
-            modified_name
-        } else {
-            String::from("Mario")
-        }
-    }
-
-    let name_input = get_name_input();
-    let player_name = handle_string(name_input);
-
-    println!("Your name is: {}", player_name);
+     let name_input = name::get_name_input();
 
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
@@ -88,7 +61,7 @@ fn main() -> Result<(), String> {
     // Generating the level
     // Includes background, interactable map and characters
     //
-    let generator_result = map::map_creator::generate();
+    let generator_result = map::map_creator::generate(name_input);
     let mut static_map_background_boxes = generator_result.0;
     let mut static_map_boxes = generator_result.1;
     let mut static_map_colliders = generator_result.2;
@@ -148,12 +121,12 @@ fn main() -> Result<(), String> {
             }
         }
 
-        if !player_name.is_empty() {
+        if !player.get_name().is_empty() {
             let font_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
             let font = font_context.load_font("src/extra/HackNerdFont-Regular.ttf", 24)?;
 
             let surface = font
-                .render(&player_name)
+                .render( &player.get_name() )
                 .blended(Color::WHITE)
                 .map_err(|e| e.to_string())?;
 

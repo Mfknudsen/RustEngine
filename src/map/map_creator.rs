@@ -6,11 +6,12 @@ use crate::{
     traits::npc::NPC,
     DrawBox,
     map::map_collider::MapCollider,
+    name::get_name_input,
     WINDOW_HEIGHT,
 };
 
 
-pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<Box<dyn NPC>>) {
+pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<Box<dyn NPC>>) {
     ///
     /// BACKGROUND
     ///
@@ -37,7 +38,7 @@ pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<
     ///
     /// PLAYER
     ///
-    let mut player = Player::new(50.0, 500.0);
+    let mut player = Player::new(50.0, 500.0, player_name);
 
     ///
     /// GUMBAS

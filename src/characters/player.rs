@@ -1,9 +1,9 @@
 use sdl2::{keyboard::Keycode, pixels::Color, render::WindowCanvas};
 
 use crate::{
-    DrawBox,
     get_delta_time,
     traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
+    DrawBox,
 };
 
 const PLAYER_MOVE_SPEED: f32 = 1750.0;
@@ -19,10 +19,11 @@ pub struct Player {
     keyboard_a: bool,
     keyboard_d: bool,
     grounded: bool,
+    name: String,
 }
 
 impl Player {
-    pub(crate) fn new(x_start: f32, y_start: f32) -> Self {
+    pub(crate) fn new(x_start: f32, y_start: f32, name: String) -> Self {
         Self {
             x: x_start,
             y: y_start,
@@ -34,6 +35,7 @@ impl Player {
             keyboard_a: false,
             grounded: false,
             boxes: Self::setup_boxes(),
+            name: name,
         }
     }
 
@@ -46,12 +48,10 @@ impl Player {
     }
 
     pub(crate) fn update_input(&mut self, key_code: Keycode, key_down: bool) {
-        if key_code == Keycode::A
-        {
+        if key_code == Keycode::A {
             self.keyboard_a = key_down;
         }
-        if key_code == Keycode::D
-        {
+        if key_code == Keycode::D {
             self.keyboard_d = key_down;
         }
 
@@ -60,6 +60,10 @@ impl Player {
             self.add_force(0.0, -2500.0);
             self.grounded = false;
         }
+    }
+
+    pub fn get_name (&self) -> &String {
+        &self.name
     }
 }
 
@@ -154,8 +158,7 @@ impl BoxCollider for Player {
         self.x_velocity = set;
     }
 
-    fn set_y_velocity(&mut self, set: f32)
-    {
+    fn set_y_velocity(&mut self, set: f32) {
         self.y_velocity = set;
     }
 
@@ -183,3 +186,5 @@ impl Character for Player {
         false
     }
 }
+
+
