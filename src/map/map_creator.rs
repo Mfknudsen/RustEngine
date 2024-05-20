@@ -7,7 +7,6 @@ use crate::{
     traits::npc::NPC,
     DrawBox,
     map::map_collider::MapCollider,
-    name::get_name_input,
     WINDOW_HEIGHT,
 };
 
@@ -15,7 +14,7 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
     //
     // BACKGROUND
     //
-    let mut static_map_background_boxes: Vec<DrawBox> = Vec::new();
+    let static_map_background_boxes: Vec<DrawBox> = Vec::new();
 
     //
     // LEVEL
@@ -41,9 +40,9 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
     let player = Arc::new(Mutex::new(Player::new(50.0, 500.0, player_name)));
     // let mut player = Player::new(50.0, 500.0);
 
-    ///
-    /// GUMBAS
-    ///
+    //
+    // GUMBAS
+    //
 
 
     let mut turtles: Vec<Box<dyn NPC>> = Vec::new();
@@ -58,7 +57,7 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
 
 fn generate_ground_with_collider(x: f32, y: f32, x_size: f32, y_size: f32) -> (Vec<DrawBox>, MapCollider) {
     let mut result: Vec<DrawBox> = Vec::new();
-    let mut collider: MapCollider = MapCollider::new(x, y, x_size, y_size);
+    let collider: MapCollider = MapCollider::new(x, y, x_size, y_size);
 
     result.push(DrawBox::new(x, y + y_size * 0.1, x_size as u32, (y_size * 0.9) as u32, Color::RGB(108, 26, 26)));
     result.push(DrawBox::new(x, y, x_size as u32, (y_size * 0.1) as u32, Color::GREEN));

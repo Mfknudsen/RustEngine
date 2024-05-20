@@ -1,13 +1,9 @@
 use std::{
-    fmt::Debug,
     time::{Duration, Instant},
     thread,
     sync::{mpsc, Arc, MutexGuard}
 };
 
-use std::io::{self, Write};
-
-use sdl2::libc::printf;
 use sdl2::{
     event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas,
     video::Window, Sdl, VideoSubsystem,
@@ -69,10 +65,10 @@ fn main() -> Result<(), String> {
     // Includes background, interactable map and characters
     //
     let generator_result = map::map_creator::generate(name_input);
-    let mut static_map_background_boxes = generator_result.0;
-    let mut static_map_boxes = generator_result.1;
+    let static_map_background_boxes = generator_result.0;
+    let static_map_boxes = generator_result.1;
     let mut static_map_colliders = generator_result.2;
-    let mut player = generator_result.3;
+    let player = generator_result.3;
     let mut gumbas = generator_result.4;
 
     //
@@ -171,7 +167,7 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().add_force(0.0, GRAVITY * get_delta_time());
 
-        for mut g in &mut gumbas {
+        for g in &mut gumbas {
             g.add_force(0.0, GRAVITY * get_delta_time())
         }
 
@@ -180,9 +176,9 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().update();
 
-        ///
-        /// Remove defeated
-        ///
+        //
+        // Remove defeated
+        //
         let gumbalen = gumbas.len() - 1;
         for i in 0..(gumbalen) {
             if gumbas[gumbalen - i].should_remove() {
@@ -193,7 +189,7 @@ fn main() -> Result<(), String> {
         //
         // Continue updating characters
         //
-        for mut g in &mut gumbas {
+        for g in &mut gumbas {
             g.update();
         }
 
@@ -202,7 +198,7 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().check_against_map(&mut static_map_colliders);
 
-        for mut g in &mut gumbas {
+        for g in &mut gumbas {
             g.check_against_map(&mut static_map_colliders)
         }
 
@@ -221,7 +217,7 @@ fn main() -> Result<(), String> {
             box_obj.draw(0.0, 0.0, &mut canvas)?; //Draws new box with changes in
         }
 
-        for mut g in &mut gumbas {
+        for g in &mut gumbas {
             g.draw_on_canvas(&mut canvas);
         }
 
@@ -255,7 +251,7 @@ fn update_global_player_offset(player: &Player) {
     let half_y: f32 = (WINDOW_HEIGHT / 2) as f32;
 
     unsafe {
-        let mut towards_target_x: f32 =
+        let towards_target_x: f32 =
             (-player.get_x() + player.x_size() / 2.0 + half_x) - GLOBAL_PLAYER_X_OFFSET;
         GLOBAL_PLAYER_X_OFFSET += towards_target_x * lerp * speed * get_delta_time();
 
@@ -263,7 +259,7 @@ fn update_global_player_offset(player: &Player) {
             GLOBAL_PLAYER_X_OFFSET = ((WINDOW_WIDTH / 2) as f32) - 500.0;
         }
 
-        let mut towards_target_y: f32 =
+        let towards_target_y: f32 =
             (-player.get_y() + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
         GLOBAL_PLAYER_Y_OFFSET += towards_target_y * lerp * speed * get_delta_time();
 

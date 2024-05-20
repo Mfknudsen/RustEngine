@@ -10,16 +10,16 @@ pub trait BoxCollider {
     fn x_position(&self) -> f32;
     fn y_position(&self) -> f32;
 
-    fn set_x_position(&mut self, set: f32) {}
-    fn set_y_position(&mut self, set: f32) {}
+    fn set_x_position(&mut self, _set: f32) {}
+    fn set_y_position(&mut self, _set: f32) {}
 
     fn x_size(&self) -> f32;
     fn y_size(&self) -> f32;
 
-    fn set_x_velocity(&mut self, set: f32) {}
-    fn set_y_velocity(&mut self, set: f32) {}
+    fn set_x_velocity(&mut self, _set: f32) {}
+    fn set_y_velocity(&mut self, _set: f32) {}
 
-    fn set_grounded(&mut self, set: bool) {}
+    fn set_grounded(&mut self, _set: bool) {}
 
     fn check_against_map(&mut self, map_colliders: &mut Vec<MapCollider>) {
         let move_x = self.move_x();
