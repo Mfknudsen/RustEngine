@@ -11,6 +11,7 @@ use sdl2::{
     event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas,
     video::Window, Sdl, VideoSubsystem,
 };
+use sdl2::libc::printf;
 
 use crate::{
     characters::player::Player,
@@ -65,6 +66,7 @@ fn main() -> Result<(), String> {
 
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
+
 
     let window: Window = video_subsystem
         .window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -199,12 +201,15 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().update();
 
-        //
-        // Remove defeated
-        //
-        for i in 0..(gumbas.len() - 1) {
-            if !gumbas[gumbas.len() - 1 - i].should_remove() {
-                gumbas.remove(gumbas.len() - 1 - i);
+        ///
+        /// Remove defeated
+        ///
+        let gumbalen = gumbas.len() -1;
+        for i in 0..(gumbalen) {
+            if gumbas[gumbalen - i].should_remove() {
+
+                gumbas.remove(gumbalen - i);
+
             }
         }
 
@@ -264,6 +269,8 @@ fn update_delta_time() {
         PREVIOUS_TIME = now.elapsed().as_secs_f32();
     }
 }
+
+
 
 fn update_global_player_offset(player: &Player) {
     let lerp: f32 = 0.9;

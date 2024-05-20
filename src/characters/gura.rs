@@ -11,11 +11,12 @@ use crate::{
     traits::drawer::Drawer,
     traits::transform::Transform,
     traits::npc::NPC,
+
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
 
-pub struct Gumba {
+pub struct Gura {
     x: f32,
     y: f32,
     x_velocity: f32,
@@ -25,9 +26,17 @@ pub struct Gumba {
     boxes: Vec<DrawBox>,
     walk_direction: f32,
     dead: bool,
+    state: State,
+    state_timer: f32,
 }
 
-impl Gumba {
+pub enum State {
+    Idle,
+    Move,
+    Run,
+}
+impl Gura {
+
     pub(crate) fn new(x_start: f32, y_start: f32) -> Self {
         Self {
             x: x_start,
@@ -39,19 +48,22 @@ impl Gumba {
             boxes: Self::setup_boxes(),
             walk_direction: -1.0,
             dead: false,
+            state: State::Idle,
+            state_timer: 0.0,
+
         }
     }
 
     fn setup_boxes() -> Vec<DrawBox> {
         let mut result = Vec::new();
 
-        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GREEN));
+        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::CYAN));
 
         return result;
     }
 }
 
-impl Transform for Gumba {
+impl Transform for Gura  {
     fn get_x(&self) -> f32 {
         self.x
     }
@@ -90,7 +102,7 @@ impl Transform for Gumba {
     }
 }
 
-impl Drawer for Gumba {
+impl Drawer for Gura  {
     fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
         for box_obj in &mut self.boxes {
             box_obj.draw(self.x, self.y, canvas).expect("ERROR");
@@ -98,7 +110,7 @@ impl Drawer for Gumba {
     }
 }
 
-impl BoxCollider for Gumba {
+impl BoxCollider for Gura {
     fn move_x(&self) -> f32 {
         self.x_velocity + self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()
     }
@@ -139,16 +151,54 @@ impl BoxCollider for Gumba {
         self.y_velocity = set;
     }
 }
-impl NPC for Gumba{
+
+impl NPC for Gura {
+
 }
-impl Character for Gumba {
+
+impl Character for Gura {
     fn update(&mut self) {
-        self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-        self.x += self.x_velocity * get_delta_time();
+        //Gravity
         self.y += self.y_velocity * get_delta_time();
+
+        //state machine
+
+        //This part is so that the npc can change between states
+        self.state_timer += get_delta_time();
+        if self.state_timer > 2.0 {
+            // Reset the state timer
+            self.state_timer = 0.0;
+            // Change the state
+            match self.state {
+                State::Idle => {
+                    self.state = State::Move;
+                },
+                State::Move => {
+                    self.state = State::Run;
+                },
+                State::Run => {
+                    self.state = State::Idle;
+                },
+            }
+        }
+        //Actual state machine stuff
+        match self.state {
+            State::Idle => {
+                return;
+            },
+            State::Move => {
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+                self.x += self.x_velocity * get_delta_time();
+            },
+            State::Run => {
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()*2.0;
+                self.x += self.x_velocity * get_delta_time();
+            },
+        }
     }
 
     fn should_remove(&self) -> bool {
         self.dead
     }
+
 }

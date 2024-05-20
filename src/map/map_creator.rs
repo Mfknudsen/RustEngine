@@ -3,13 +3,14 @@ use rand::Rng;
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    characters::{gumba::Gumba, player::Player},
+    characters::{gumba::Gumba,gura::Gura, player::Player},
+    traits::npc::NPC,
     DrawBox,
     map::map_collider::MapCollider,
     WINDOW_HEIGHT,
 };
 
-pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Arc<Mutex<Player>>, Vec<Gumba>) {
+pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Arc<Mutex<Player>>, Vec<Box<dyn NPC>>) {
     //
     // BACKGROUND
     //
@@ -39,13 +40,17 @@ pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Arc<Mutex<Pl
     let player = Arc::new(Mutex::new(Player::new(50.0, 500.0)));
     // let mut player = Player::new(50.0, 500.0);
 
-    //
-    //GUMBAS
-    //
-    let mut turtles: Vec<Gumba> = Vec::new();
+    ///
+    /// GUMBAS
+    ///
 
-    turtles.push(Gumba::new(350.0, 500.0));
-    turtles.push(Gumba::new(450.0, 500.0));
+
+    let mut turtles: Vec<Box<dyn NPC>> = Vec::new();
+
+    turtles.push(Box::new(Gura::new(200.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(300.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(440.0, 500.0)));
+    turtles.push(Box::new(Gumba::new(360.0, 500.0)));
 
     return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, turtles);
 }
