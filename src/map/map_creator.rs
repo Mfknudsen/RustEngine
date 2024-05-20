@@ -1,5 +1,6 @@
 use sdl2::pixels::Color;
 use rand::Rng;
+use std::sync::{Arc, Mutex};
 
 use crate::{
     characters::{gumba::Gumba, player::Player},
@@ -8,15 +9,15 @@ use crate::{
     WINDOW_HEIGHT,
 };
 
-pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<Gumba>) {
-    ///
-    /// BACKGROUND
-    ///
+pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Arc<Mutex<Player>>, Vec<Gumba>) {
+    //
+    // BACKGROUND
+    //
     let mut static_map_background_boxes: Vec<DrawBox> = Vec::new();
 
-    ///
-    /// LEVEL
-    ///
+    //
+    // LEVEL
+    //
     let mut static_map_boxes: Vec<DrawBox> = Vec::new();
     let mut static_map_colliders: Vec<MapCollider> = Vec::new();
 
@@ -28,18 +29,19 @@ pub fn generate() -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Player, Vec<
     static_map_boxes.append(&mut r.0);
     static_map_colliders.push(r.1);
 
-    ///static_map_boxes.push(DrawBox::new(0.0, WINDOW_HEIGHT as f32 - 200.0, 2000, 100, Color::GREEN));
-    ///static_map_boxes.push(DrawBox::new(0.0, WINDOW_HEIGHT as f32 - 100.0, 2000, 500, Color::RGB(108, 26, 26)));
-    ///static_map_colliders.push(MapCollider::new(0.0, WINDOW_HEIGHT as f32 - 200.0, 2000.0, 600.0));
+    //static_map_boxes.push(DrawBox::new(0.0, WINDOW_HEIGHT as f32 - 200.0, 2000, 100, Color::GREEN));
+    //static_map_boxes.push(DrawBox::new(0.0, WINDOW_HEIGHT as f32 - 100.0, 2000, 500, Color::RGB(108, 26, 26)));
+    //static_map_colliders.push(MapCollider::new(0.0, WINDOW_HEIGHT as f32 - 200.0, 2000.0, 600.0));
 
-    ///
-    /// PLAYER
-    ///
-    let mut player = Player::new(50.0, 500.0);
+    //
+    // PLAYER
+    //
+    let player = Arc::new(Mutex::new(Player::new(50.0, 500.0)));
+    // let mut player = Player::new(50.0, 500.0);
 
-    ///
-    /// GUMBAS
-    ///
+    //
+    //GUMBAS
+    //
     let mut turtles: Vec<Gumba> = Vec::new();
 
     turtles.push(Gumba::new(350.0, 500.0));

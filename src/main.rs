@@ -1,6 +1,8 @@
 use std::{
     fmt::Debug,
     time::{Duration, Instant},
+    thread,
+    sync::{mpsc, Arc, MutexGuard}
 };
 
 use std::io::{self, Write};
@@ -31,6 +33,11 @@ static mut GLOBAL_PLAYER_Y_OFFSET: f32 = 0.0;
 static mut DELTA_TIME: f32 = 0.0;
 
 static mut PREVIOUS_TIME: f32 = 0.0;
+
+enum ControlMessage {
+    Break,
+    // Other message types...
+}
 
 fn main() -> Result<(), String> {
     fn get_name_input() -> String {
@@ -93,51 +100,46 @@ fn main() -> Result<(), String> {
         let half_x = (WINDOW_WIDTH / 2) as f32;
         let half_y = (WINDOW_HEIGHT / 2) as f32;
 
-        GLOBAL_PLAYER_X_OFFSET = -player.get_x() + player.x_size() / 2.0 + half_x;
-        GLOBAL_PLAYER_Y_OFFSET = -player.get_y() + player.y_size() / 2.0 + half_y;
+        let player_lock = player.lock().unwrap();
+
+        GLOBAL_PLAYER_X_OFFSET = -player_lock.get_x() + player_lock.x_size() / 2.0 + half_x;
+        GLOBAL_PLAYER_Y_OFFSET = -player_lock.get_y() + player_lock.y_size() / 2.0 + half_y;
     }
 
+    let (tx, rx) = mpsc::channel();
+
+    
     //
     // Game loop
     //
     'game: loop {
+        let mut handles = Vec::new();
         //Creates loop with "running" label to break out of later
         //
         // Reading player input events
         //
         for event in event_pump.poll_iter() {
-            match event { //Matches given pattern or keypress to event
-                Event::Quit { .. } //Quit event for closing window
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape), //If escape key is pressed...
-                    ..
-                } => break 'game, //...Break out of running loop
-
-                Event::KeyDown { keycode: Some(Keycode::A), .. } => {
-                    player.update_input(Keycode::A, true);
-                    break;
+            let player_clone = Arc::clone(&player);
+            let tx = tx.clone();
+            let handle = thread::spawn(move ||{
+                
+                let player_lock = player_clone.lock().unwrap();
+                if let Err(e) = handle_event(&tx, &event, player_lock) {
+                    eprintln!("{}", e);
                 }
-                Event::KeyDown { keycode: Some(Keycode::D), .. } => {
-                    player.update_input(Keycode::D, true);
-                    break;
-                }
-                Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
-                    player.update_input(Keycode::Space, true);
-                    break;
-                }
-
-                Event::KeyUp { keycode: Some(Keycode::A), .. } => {
-                    player.update_input(Keycode::A, false);
-                    break;
-                }
-                Event::KeyUp { keycode: Some(Keycode::D), .. } => {
-                    player.update_input(Keycode::D, false);
-                    break;
-                }
-
-                _ => {}
+            });
+            handles.push(handle);
             }
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+
+        if let Ok(ControlMessage::Break) = rx.try_recv() {
+            break 'game;
         }
+
 
         if !name_input.is_empty() {
             let font_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
@@ -161,12 +163,17 @@ fn main() -> Result<(), String> {
                 }
             };
 
+            let player_lock = player.lock().unwrap();
+
             let target = Rect::new(
-                (player.get_x() - player.x_size() + get_global_player_x_offset() + 35.0) as i32,
-                (player.get_y() - player.y_size() + get_global_player_y_offset() - 15.0) as i32,
+                (player_lock.get_x() - player_lock.x_size() + get_global_player_x_offset() + 35.0) as i32,
+                (player_lock.get_y() - player_lock.y_size() + get_global_player_y_offset() - 15.0) as i32,
                 surface.width(),
                 surface.height(),
             );
+
+            drop(player_lock);
+
             canvas.copy(&texture, None, target)?;
 
             canvas.present();
@@ -176,12 +183,13 @@ fn main() -> Result<(), String> {
         // Update globals
         //
         update_delta_time();
-        update_global_player_offset(&player);
+        update_global_player_offset(&player.lock().unwrap()); //Uses dereferencing
 
         //
         // Gravity force on all characters
         //
-        player.add_force(0.0, GRAVITY * get_delta_time());
+        player.lock().unwrap().add_force(0.0, GRAVITY * get_delta_time());
+
         for mut g in &mut gumbas {
             g.add_force(0.0, GRAVITY * get_delta_time())
         }
@@ -189,7 +197,7 @@ fn main() -> Result<(), String> {
         //
         // Updating characters
         //
-        player.update();
+        player.lock().unwrap().update();
 
         //
         // Remove defeated
@@ -210,7 +218,8 @@ fn main() -> Result<(), String> {
         //
         // Check collisions
         //
-        player.check_against_map(&mut static_map_colliders);
+        player.lock().unwrap().check_against_map(&mut static_map_colliders);
+
         for mut g in &mut gumbas {
             g.check_against_map(&mut static_map_colliders)
         }
@@ -234,7 +243,7 @@ fn main() -> Result<(), String> {
             g.draw_on_canvas(&mut canvas);
         }
 
-        player.draw_on_canvas(&mut canvas);
+        player.lock().unwrap().draw_on_canvas(&mut canvas);
 
         std::thread::sleep(Duration::from_millis(1));
     }
@@ -298,6 +307,38 @@ fn get_global_player_y_offset() -> f32 {
     unsafe {
         return GLOBAL_PLAYER_Y_OFFSET;
     }
+}
+
+fn handle_event(tx: &mpsc::Sender<ControlMessage>, event: &Event, mut player_lock: MutexGuard<Player>) -> Result<(), String> {
+    match event {
+        Event::Quit { .. }
+        | Event::KeyDown {
+            keycode: Some(Keycode::Escape),
+            ..
+        } => {
+            tx.send(ControlMessage::Break).map_err(|e| format!("Failed to send ControlMessage::Break: {}", e))?;
+        }
+
+        Event::KeyDown { keycode: Some(Keycode::A), .. } => {
+            player_lock.update_input(Keycode::A, true);
+        }
+        Event::KeyDown { keycode: Some(Keycode::D), .. } => {
+            player_lock.update_input(Keycode::D, true);
+        }
+        Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+            player_lock.update_input(Keycode::Space, true);
+        }
+
+        Event::KeyUp { keycode: Some(Keycode::A), .. } => {
+            player_lock.update_input(Keycode::A, false);
+        }
+        Event::KeyUp { keycode: Some(Keycode::D), .. } => {
+            player_lock.update_input(Keycode::D, false);
+        }
+
+        _ => {}
+    }
+    Ok(())
 }
 
 pub(crate) struct DrawBox {
