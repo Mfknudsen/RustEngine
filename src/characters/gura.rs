@@ -11,7 +11,7 @@ use crate::{
     traits::drawer::Drawer,
     traits::transform::Transform,
     traits::npc::NPC,
-    characters::player::Player,
+
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -160,9 +160,11 @@ impl Character for Gura {
     fn update(&mut self) {
         //Gravity
         self.y += self.y_velocity * get_delta_time();
-        println!("{}", self.state_timer.to_string());
-        self.state_timer += get_delta_time();
+
         //state machine
+
+        //This part is so that the npc can change between states
+        self.state_timer += get_delta_time();
         if self.state_timer > 2.0 {
             // Reset the state timer
             self.state_timer = 0.0;
@@ -179,23 +181,20 @@ impl Character for Gura {
                 },
             }
         }
-
+        //Actual state machine stuff
         match self.state {
             State::Idle => {
                 return;
             },
             State::Move => {
-
                 self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
                 self.x += self.x_velocity * get_delta_time();
-
             },
             State::Run => {
-                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()*2.0;
                 self.x += self.x_velocity * get_delta_time();
             },
         }
-
     }
 
     fn should_remove(&self) -> bool {
