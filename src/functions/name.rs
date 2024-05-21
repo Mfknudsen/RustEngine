@@ -18,12 +18,22 @@ pub fn get_name_input() -> String {
     loop {
         print!("Write your name: ");
         io::stdout().flush().expect("Failed to flush stdout");
-
-        io::stdin()
-            .read_line(&mut name_input)
-            .expect("Failed to read line");
-        let player_name = handle_string(name_input);
-        println!("Your name is: {}", player_name);
-        return player_name;
+        match io::stdout().flush() {
+            Ok(_) => {
+                match io::stdin().read_line(&mut name_input) {
+                    Ok(_) => {
+                        let player_name = handle_string(name_input);
+                        println!("Your name is: {}", player_name);
+                        return player_name;
+                    }
+                    _err => {
+                        println!("Failed to read line");
+                    }
+                }
+            }
+            err => {
+                println!("Error: {:?}", err);
+            }
+        };
     }
 }

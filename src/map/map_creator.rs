@@ -3,7 +3,7 @@ use rand::Rng;
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    characters::{gumba::Gumba,gura::Gura, player::Player},
+    characters::{gumba::Gumba, gura::Gura, player::Player},
     traits::npc::NPC,
     DrawBox,
     map::map_collider::MapCollider,
@@ -47,11 +47,20 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
 
     let mut turtles: Vec<Box<dyn NPC>> = Vec::new();
 
-    turtles.push(Box::new(Gura::new(200.0, 500.0)));
-    turtles.push(Box::new(Gumba::new(300.0, 500.0)));
-    turtles.push(Box::new(Gumba::new(440.0, 500.0)));
-    turtles.push(Box::new(Gumba::new(360.0, 500.0)));
 
+    match Gura::new(200.0, 500.0) {
+        Some(gura) => turtles.push(Box::new(gura)),
+        None => println!("Failed to create Gura"),
+    }
+
+    match Gumba::new(300.0, 500.0) {
+        Ok(gumba) => turtles.push(Box::new(gumba)),
+        Err(e) => println!("Failed to create Gumba: {}", e),
+    }
+    match Gumba::new(-300.0, 500.0) {
+        Ok(gumba) => turtles.push(Box::new(gumba)),
+        Err(e) => println!("Failed to create Gumba: {}", e),
+    }
     return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, turtles);
 }
 

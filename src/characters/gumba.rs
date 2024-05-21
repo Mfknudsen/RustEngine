@@ -28,17 +28,24 @@ pub struct Gumba {
 }
 
 impl Gumba {
-    pub(crate) fn new(x_start: f32, y_start: f32) -> Self {
-        Self {
-            x: x_start,
-            y: y_start,
-            x_velocity: 0.0,
-            y_velocity: 0.0,
-            box_x_size: 50.0,
-            box_y_size: 50.0,
-            boxes: Self::setup_boxes(),
-            walk_direction: -1.0,
-            dead: false,
+    pub(crate) fn new(x_start: f32, y_start: f32) -> Result<Self, &'static str> {
+        if x_start < 0.0 || y_start < 0.0 {
+            Err("Value cannot be negative")
+        }
+        else {
+            Ok(
+                Self {
+                    x: x_start,
+                    y: y_start,
+                    x_velocity: 0.0,
+                    y_velocity: 0.0,
+                    box_x_size: 50.0,
+                    box_y_size: 50.0,
+                    boxes: Self::setup_boxes(),
+                    walk_direction: -1.0,
+                    dead: false,
+                }
+            )
         }
     }
 

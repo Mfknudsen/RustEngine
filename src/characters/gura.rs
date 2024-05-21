@@ -37,20 +37,26 @@ pub enum State {
 }
 impl Gura {
 
-    pub(crate) fn new(x_start: f32, y_start: f32) -> Self {
-        Self {
-            x: x_start,
-            y: y_start,
-            x_velocity: 0.0,
-            y_velocity: 0.0,
-            box_x_size: 50.0,
-            box_y_size: 50.0,
-            boxes: Self::setup_boxes(),
-            walk_direction: -1.0,
-            dead: false,
-            state: State::Idle,
-            state_timer: 0.0,
-
+    pub(crate) fn new(x_start: f32, y_start: f32) -> Option<Self> {
+        if x_start < 0.0 || y_start < 0.0 {
+            None
+        }
+        else {
+            Some(
+                Self {
+                    x: x_start,
+                    y: y_start,
+                    x_velocity: 0.0,
+                    y_velocity: 0.0,
+                    box_x_size: 50.0,
+                    box_y_size: 50.0,
+                    boxes: Self::setup_boxes(),
+                    walk_direction: -1.0,
+                    dead: false,
+                    state: State::Idle,
+                    state_timer: 0.0,
+                }
+            )
         }
     }
 
@@ -105,7 +111,12 @@ impl Transform for Gura  {
 impl Drawer for Gura  {
     fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
         for box_obj in &mut self.boxes {
-            box_obj.draw(self.x, self.y, canvas).expect("ERROR");
+            match box_obj.draw(self.x, self.y, canvas) {
+                Ok(_) => {},
+                Err(e) => {
+                    println!("Error: {}", e);
+                }
+            }
         }
     }
 }
