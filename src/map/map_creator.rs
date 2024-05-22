@@ -1,16 +1,23 @@
-use sdl2::pixels::Color;
 use rand::Rng;
+use sdl2::pixels::Color;
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    characters::{gumba::Gumba, gura::Gura, player::Player},
-    traits::npc::NPC,
-    DrawBox,
+    characters::{flag::Flag, gumba::Gumba, gura::Gura, player::Player},
     map::map_collider::MapCollider,
-    WINDOW_HEIGHT,
+    traits::npc::NPC,
+    DrawBox, WINDOW_HEIGHT,
 };
 
-pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapCollider>, Arc<Mutex<Player>>, Vec<Box<dyn NPC>>) {
+pub fn generate(
+    player_name: String,
+) -> (
+    Vec<DrawBox>,
+    Vec<DrawBox>,
+    Vec<MapCollider>,
+    Arc<Mutex<Player>>,
+    Vec<Box<dyn NPC>>,
+) {
     //
     // BACKGROUND
     //
@@ -43,7 +50,7 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
     //
     // GUMBAS
     //
-    
+
     let mut npcs: Vec<Box<dyn NPC>> = Vec::new();
 
     match Gura::new(700.0, 500.0) {
@@ -51,7 +58,7 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
         None => println!("Failed to create Gura"),
     }
 
-    match Gumba::new(500.0, 500.0) {
+    match Gumba::new(600.0, 500.0) {
         Ok(gumba) => npcs.push(Box::new(gumba)),
         Err(e) => println!("Failed to create Gumba: {}", e),
     }
@@ -59,22 +66,57 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
         Ok(gumba) => npcs.push(Box::new(gumba)),
         Err(e) => println!("Failed to create Gumba: {}", e),
     }
-    return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, npcs);
+
+    match Flag::new(3800.0, 300.0) {
+        Some(flag) => npcs.push(Box::new(flag)),
+        None => println!("Failed to create Flag"),
+    }
+
+    return (
+        static_map_background_boxes,
+        static_map_boxes,
+        static_map_colliders,
+        player,
+        npcs,
+    );
 }
 
-fn generate_ground_with_collider(x: f32, y: f32, x_size: f32, y_size: f32) -> (Vec<DrawBox>, MapCollider) {
+fn generate_ground_with_collider(
+    x: f32,
+    y: f32,
+    x_size: f32,
+    y_size: f32,
+) -> (Vec<DrawBox>, MapCollider) {
     let mut result: Vec<DrawBox> = Vec::new();
     let collider: MapCollider = MapCollider::new(x, y, x_size, y_size);
 
-    result.push(DrawBox::new(x, y + y_size * 0.1, x_size as u32, (y_size * 0.9) as u32, Color::RGB(108, 26, 26)));
-    result.push(DrawBox::new(x, y, x_size as u32, (y_size * 0.1) as u32, Color::GREEN));
+    result.push(DrawBox::new(
+        x,
+        y + y_size * 0.1,
+        x_size as u32,
+        (y_size * 0.9) as u32,
+        Color::RGB(108, 26, 26),
+    ));
+    result.push(DrawBox::new(
+        x,
+        y,
+        x_size as u32,
+        (y_size * 0.1) as u32,
+        Color::GREEN,
+    ));
 
     let n = (x_size / 50.0) as u32;
     for _i in 0..n {
         let x_point = rand::thread_rng().gen_range(10.0..(x_size - 40.0)) + x;
         let y_point = rand::thread_rng().gen_range(10.0..y_size * 0.9 - 10.0) + y + y_size * 0.1;
 
-        result.push(DrawBox::new(x_point, y_point, 30, 15, Color::RGB(138, 56, 56)))
+        result.push(DrawBox::new(
+            x_point,
+            y_point,
+            30,
+            15,
+            Color::RGB(138, 56, 56),
+        ))
     }
 
     (result, collider)
