@@ -167,7 +167,7 @@ impl Character for Gura {
     fn update(&mut self) {
         //Gravity
         self.y += self.y_velocity * get_delta_time();
-
+        self.x += self.x_velocity * get_delta_time();
         //state machine
 
         //This part is so that the npc can change between states

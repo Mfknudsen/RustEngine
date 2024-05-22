@@ -41,7 +41,7 @@ impl Gumba {
                 boxes: Vec::new(),
                 walk_direction: -1.0,
                 dead: false,
-                state: State::Move,
+                state: State::Idle,
             };
             r.boxes = r.setup_boxes();
 
