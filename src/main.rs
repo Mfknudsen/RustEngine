@@ -6,10 +6,8 @@ use std::{
 };
 
 use sdl2::{
-    event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas,
-    Sdl, video::Window, VideoSubsystem,
+    event::Event, keyboard::Keycode, pixels::Color, rect::Rect
 };
-use sdl2::sys::SDL_WindowFlags;
 
 use crate::{
     characters::player::Player,
@@ -20,12 +18,14 @@ use crate::{
         transform::Transform,
         character::Character,
     },
+    sdl::setup
 };
 
 mod characters;
 mod functions;
 mod map;
 mod traits;
+pub mod sdl;
 
 const WINDOW_WIDTH: u32 = 640 * 2;
 const WINDOW_HEIGHT: u32 = 480 * 2;
@@ -47,27 +47,7 @@ enum ControlMessage {
 fn main() -> Result<(), Box<dyn Error>> {
     let name_input = name::get_name_input()?;
     
-
-    let sdl_context: Sdl = sdl2::init()?;
-    let video_subsystem: VideoSubsystem = sdl_context.video()?;
-
-    let mut builder = video_subsystem.window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT);
-    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_INPUT_FOCUS as u32);
-
-    let window: Window = builder
-        .position_centered()
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    //
-    // Creating the canvas
-    //
-    let mut canvas: WindowCanvas = window.into_canvas().build().map_err(|e| e.to_string())?;
-    canvas.set_draw_color(Color::RGB(255, 140, 0)); //Background Color
-    canvas.clear(); //Clearing canvas from previous activity
-    canvas.present(); //Updates canvas to show recent activity
-
-    let mut event_pump = sdl_context.event_pump()?; //Responsible for collecting and
+    let (mut canvas, mut event_pump) = setup::init_sdl(WINDOW_WIDTH, WINDOW_HEIGHT)?;
 
     //
     // Generating the level
@@ -83,12 +63,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     //
     // Start values for globals
     //
+    let half_x = (WINDOW_WIDTH / 2) as f32;
+    let half_y = (WINDOW_HEIGHT / 2) as f32;
+    
+    let player_lock = player.lock().unwrap();
+
     unsafe {
-        let half_x = (WINDOW_WIDTH / 2) as f32;
-        let half_y = (WINDOW_HEIGHT / 2) as f32;
-
-        let player_lock = player.lock().unwrap();
-
         GLOBAL_PLAYER_X_OFFSET = -player_lock.x_position() + player_lock.x_size() / 2.0 + half_x;
         GLOBAL_PLAYER_Y_OFFSET = -player_lock.y_position() / 2.0 + half_y;
     }
