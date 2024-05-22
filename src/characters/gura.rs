@@ -11,7 +11,6 @@ use crate::{
     traits::drawer::Drawer,
     traits::transform::Transform,
     traits::npc::NPC,
-
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -35,41 +34,33 @@ pub enum State {
     Move,
     Run,
 }
-impl Gura {
 
+impl Gura {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Option<Self> {
         if x_start < 0.0 || y_start < 0.0 {
             None
+        } else {
+            let mut r = Self {
+                x: x_start,
+                y: y_start,
+                x_velocity: 0.0,
+                y_velocity: 0.0,
+                box_x_size: 50.0,
+                box_y_size: 50.0,
+                boxes: Vec::new(),
+                walk_direction: -1.0,
+                dead: false,
+                state: State::Idle,
+                state_timer: 0.0,
+            };
+            r.boxes = r.setup_boxes();
+
+            Some(r)
         }
-        else {
-            Some(
-                Self {
-                    x: x_start,
-                    y: y_start,
-                    x_velocity: 0.0,
-                    y_velocity: 0.0,
-                    box_x_size: 50.0,
-                    box_y_size: 50.0,
-                    boxes: Self::setup_boxes(),
-                    walk_direction: -1.0,
-                    dead: false,
-                    state: State::Idle,
-                    state_timer: 0.0,
-                }
-            )
-        }
-    }
-
-    fn setup_boxes() -> Vec<DrawBox> {
-        let mut result = Vec::new();
-
-        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::CYAN));
-
-        return result;
     }
 }
 
-impl Transform for Gura  {
+impl Transform for Gura {
     fn get_x(&self) -> f32 {
         self.x
     }
@@ -108,11 +99,31 @@ impl Transform for Gura  {
     }
 }
 
-impl Drawer for Gura  {
+impl Drawer for Gura {
+    fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    fn get_y(&self) -> f32 {
+        self.y
+    }
+
+    fn get_boxes(&self) -> &Vec<DrawBox> {
+        &self.boxes
+    }
+
+    fn setup_boxes(&self) -> Vec<DrawBox> {
+        let mut result = Vec::new();
+
+        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::CYAN));
+
+        result
+    }
+
     fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
         for box_obj in &mut self.boxes {
             match box_obj.draw(self.x, self.y, canvas) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => {
                     println!("Error: {}", e);
                 }
@@ -163,9 +174,7 @@ impl BoxCollider for Gura {
     }
 }
 
-impl NPC for Gura {
-
-}
+impl NPC for Gura {}
 
 impl Character for Gura {
     fn update(&mut self) {
@@ -183,33 +192,32 @@ impl Character for Gura {
             match self.state {
                 State::Idle => {
                     self.state = State::Move;
-                },
+                }
                 State::Move => {
                     self.state = State::Run;
-                },
+                }
                 State::Run => {
                     self.state = State::Idle;
-                },
+                }
             }
         }
         //Actual state machine stuff
         match self.state {
             State::Idle => {
                 return;
-            },
+            }
             State::Move => {
                 self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
                 self.x += self.x_velocity * get_delta_time();
-            },
+            }
             State::Run => {
-                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()*2.0;
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time() * 2.0;
                 self.x += self.x_velocity * get_delta_time();
-            },
+            }
         }
     }
 
     fn should_remove(&self) -> bool {
         self.dead
     }
-
 }

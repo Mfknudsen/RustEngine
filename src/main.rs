@@ -1,19 +1,24 @@
 use std::{
-    time::{Duration, Instant},
+    sync::{Arc, mpsc, MutexGuard},
     thread,
-    sync::{mpsc, Arc, MutexGuard}
+    time::Instant,
 };
 
 use sdl2::{
     event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas,
-    video::Window, Sdl, VideoSubsystem,
+    Sdl, video::Window, VideoSubsystem,
 };
+use sdl2::sys::SDL_WindowFlags;
 
 use crate::{
     characters::player::Player,
     functions::name,
-    traits::character::Character,
-    traits::{collider::BoxCollider, drawer::Drawer, transform::Transform},
+    traits::{
+        collider::BoxCollider,
+        drawer::Drawer,
+        transform::Transform,
+        character::Character,
+    },
 };
 
 mod characters;
@@ -39,13 +44,16 @@ enum ControlMessage {
 }
 
 fn main() -> Result<(), String> {
-     let name_input = name::get_name_input();
+    let name_input = name::get_name_input();
+    
 
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
 
-    let window: Window = video_subsystem
-        .window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT)
+    let mut builder = video_subsystem.window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT);
+    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_ALWAYS_ON_TOP as u32);
+
+    let window: Window = builder
         .position_centered()
         .build()
         .map_err(|e| e.to_string())?;
@@ -80,13 +88,12 @@ fn main() -> Result<(), String> {
 
         let player_lock = player.lock().unwrap();
 
-        GLOBAL_PLAYER_X_OFFSET = -player_lock.get_x() + player_lock.x_size() / 2.0 + half_x;
-        GLOBAL_PLAYER_Y_OFFSET = -player_lock.get_y() + player_lock.y_size() / 2.0 + half_y;
+        GLOBAL_PLAYER_X_OFFSET = -player_lock.x_position() + player_lock.x_size() / 2.0 + half_x;
+        GLOBAL_PLAYER_Y_OFFSET = -player_lock.y_position() / 2.0 + half_y;
     }
 
     let (tx, rx) = mpsc::channel();
 
-    
     //
     // Game loop
     //
@@ -99,19 +106,18 @@ fn main() -> Result<(), String> {
         for event in event_pump.poll_iter() {
             let player_clone = Arc::clone(&player);
             let tx = tx.clone();
-            let handle = thread::spawn(move ||{
-                
+            let handle = thread::spawn(move || {
                 let player_lock = player_clone.lock().unwrap();
                 if let Err(e) = handle_event(&tx, &event, player_lock) {
                     eprintln!("{}", e);
                 }
             });
             handles.push(handle);
-            }
+        }
 
-            for handle in handles {
-                handle.join().unwrap();
-            }
+        for handle in handles {
+            handle.join().unwrap();
+        }
 
 
         if let Ok(ControlMessage::Break) = rx.try_recv() {
@@ -123,7 +129,7 @@ fn main() -> Result<(), String> {
             let font = font_context.load_font("src/extra/HackNerdFont-Regular.ttf", 24)?;
 
             let surface = font
-                .render( &player.lock().unwrap().get_name() )
+                .render(&player.lock().unwrap().get_name())
                 .blended(Color::WHITE)
                 .map_err(|e| e.to_string())?;
 
@@ -143,8 +149,8 @@ fn main() -> Result<(), String> {
             let player_lock = player.lock().unwrap();
 
             let target = Rect::new(
-                (player_lock.get_x() - player_lock.x_size() + get_global_player_x_offset() + 35.0) as i32,
-                (player_lock.get_y() - player_lock.y_size() + get_global_player_y_offset() - 15.0) as i32,
+                (player_lock.x_position() - player_lock.x_size() + get_global_player_x_offset() + 35.0) as i32,
+                (player_lock.y_position() - player_lock.y_size() + get_global_player_y_offset() - 15.0) as i32,
                 surface.width(),
                 surface.height(),
             );
@@ -199,7 +205,8 @@ fn main() -> Result<(), String> {
         player.lock().unwrap().check_against_map(&mut static_map_colliders);
 
         for g in &mut gumbas {
-            g.check_against_map(&mut static_map_colliders)
+            g.check_against_map(&mut static_map_colliders);
+            g.check_against_player(&player);
         }
 
         //
@@ -222,8 +229,6 @@ fn main() -> Result<(), String> {
         }
 
         player.lock().unwrap().draw_on_canvas(&mut canvas);
-
-        std::thread::sleep(Duration::from_millis(1));
     }
 
     Ok(()) //Return OK / End of program
@@ -244,23 +249,21 @@ fn update_delta_time() {
 }
 
 fn update_global_player_offset(player: &Player) {
-    let lerp: f32 = 0.9;
-    let speed: f32 = 100.0;
+    let lerp: f32 = 0.8;
+    let speed: f32 = 50.0;
 
     let half_x: f32 = (WINDOW_WIDTH / 2) as f32;
     let half_y: f32 = (WINDOW_HEIGHT / 2) as f32;
 
     unsafe {
-        let towards_target_x: f32 =
-            (-player.get_x() + player.x_size() / 2.0 + half_x) - GLOBAL_PLAYER_X_OFFSET;
+        let mut towards_target_x: f32 = (-Transform::get_x(player) + half_x - 50.0) - GLOBAL_PLAYER_X_OFFSET;
         GLOBAL_PLAYER_X_OFFSET += towards_target_x * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_X_OFFSET > ((WINDOW_WIDTH / 2) as f32) - 500.0 {
             GLOBAL_PLAYER_X_OFFSET = ((WINDOW_WIDTH / 2) as f32) - 500.0;
         }
 
-        let towards_target_y: f32 =
-            (-player.get_y() + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
+        let mut towards_target_y: f32 = (-Transform::get_y(player) + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
         GLOBAL_PLAYER_Y_OFFSET += towards_target_y * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_Y_OFFSET < ((WINDOW_HEIGHT / 2) as f32) - 550.0 {

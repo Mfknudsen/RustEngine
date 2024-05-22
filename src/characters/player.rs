@@ -1,4 +1,4 @@
-use sdl2::{keyboard::Keycode, pixels::Color, render::WindowCanvas};
+use sdl2::{keyboard::Keycode, pixels::Color};
 
 use crate::{
     get_delta_time,
@@ -24,7 +24,7 @@ pub struct Player {
 
 impl Player {
     pub(crate) fn new(x_start: f32, y_start: f32, name: String) -> Self {
-        Self {
+        let mut r =  Self {
             x: x_start,
             y: y_start,
             x_velocity: 0.0,
@@ -34,17 +34,11 @@ impl Player {
             keyboard_d: false,
             keyboard_a: false,
             grounded: false,
-            boxes: Self::setup_boxes(),
-            name: name,
-        }
-    }
-
-    fn setup_boxes() -> Vec<DrawBox> {
-        let mut result: Vec<DrawBox> = Vec::new();
-
-        result.push(DrawBox::new(0.0, 0.0, 50, 100, Color::BLUE));
-
-        result
+            boxes: Vec::new(),
+            name,
+        };
+        r.boxes = r.setup_boxes();
+        r
     }
 
     pub(crate) fn update_input(&mut self, key_code: Keycode, key_down: bool) {
@@ -107,10 +101,24 @@ impl Transform for Player {
 }
 
 impl Drawer for Player {
-    fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
-        for box_obj in &mut self.boxes {
-            box_obj.draw(self.x, self.y, canvas).expect("ERROR");
-        }
+    fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    fn get_y(&self) -> f32 {
+        self.y
+    }
+
+    fn get_boxes(&self) -> &Vec<DrawBox> {
+        self.boxes.as_ref()
+    }
+
+    fn setup_boxes(&self) -> Vec<DrawBox> {
+        let mut result: Vec<DrawBox> = Vec::new();
+
+        result.push(DrawBox::new(0.0, 0.0, 50, 100, Color::BLUE));
+
+        result
     }
 }
 

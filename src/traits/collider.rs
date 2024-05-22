@@ -1,3 +1,5 @@
+use std::sync::{Arc, Mutex};
+use crate::characters::player::Player;
 use crate::map::map_collider::MapCollider;
 
 pub trait BoxCollider {
@@ -77,6 +79,38 @@ pub trait BoxCollider {
             }
         }
     }
+
+    fn check_against_player(&mut self, a_player: &Arc<Mutex<Player>>) -> bool {
+        let move_x = self.move_x();
+        let move_y = self.move_y();
+
+        let player = a_player.lock().unwrap();
+        (move_y > 0.0 &&
+            player.point_in_box(self.x_position() as i32, (self.y_position() + self.y_size()) as i32) &&
+            player.point_in_box((self.x_position() + self.x_size()) as i32, (self.y_position() + self.y_size()) as i32)) ||
+            (move_y < 0.0 &&
+                player.point_in_box(self.x_position() as i32, self.y_position() as i32) &&
+                player.point_in_box((self.x_position() + self.x_size()) as i32, self.y_position() as i32)) ||
+            (move_x > 0.0 &&
+                player.point_in_box((self.x_position() + self.x_size()) as i32, self.y_position() as i32) &&
+                player.point_in_box((self.x_position() + self.x_size()) as i32, (self.y_position() + self.y_size()) as i32)) ||
+            (move_x < 0.0 &&
+                player.point_in_box(self.x_position() as i32, self.y_position() as i32) &&
+                player.point_in_box(self.x_position() as i32, (self.y_position() + self.y_size()) as i32)) ||
+            (move_x > 0.0 &&
+                (player.point_in_box((self.x_position() + self.x_size()) as i32, self.y_position() as i32) ||
+                    player.point_in_box((self.x_position() + self.x_size()) as i32, (self.y_position() + self.y_size()) as i32))) ||
+            (move_x < 0.0 &&
+                (player.point_in_box(self.x_position() as i32, self.y_position() as i32) ||
+                    player.point_in_box(self.x_position() as i32, (self.y_position() + self.y_size()) as i32))) ||
+            (move_y > 0.0 &&
+                (player.point_in_box(self.x_position() as i32, (self.y_position() + self.y_size()) as i32) ||
+                    player.point_in_box((self.x_position() + self.x_size()) as i32, (self.y_position() + self.y_size()) as i32))) ||
+            (move_y < 0.0 &&
+                (player.point_in_box(self.x_position() as i32, self.y_position() as i32) ||
+                    player.point_in_box((self.x_position() + self.x_size()) as i32, self.y_position() as i32)))
+    }
+
 
     fn point_in_box(&self, x: i32, y: i32) -> bool {
         x > self.x_position() as i32 &&

@@ -1,7 +1,4 @@
-use sdl2::{
-    pixels::Color,
-    render::WindowCanvas,
-};
+use sdl2::pixels::Color;
 
 use crate::{
     DrawBox,
@@ -31,9 +28,8 @@ impl Gumba {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Result<Self, &'static str> {
         if x_start < 0.0 || y_start < 0.0 {
             Err("Value cannot be negative")
-        }
-        else {
-            Ok(
+        } else {
+            let mut r =
                 Self {
                     x: x_start,
                     y: y_start,
@@ -41,20 +37,14 @@ impl Gumba {
                     y_velocity: 0.0,
                     box_x_size: 50.0,
                     box_y_size: 50.0,
-                    boxes: Self::setup_boxes(),
+                    boxes: Vec::new(),
                     walk_direction: -1.0,
                     dead: false,
-                }
-            )
+                };
+            r.boxes = r.setup_boxes();
+
+            Ok(r)
         }
-    }
-
-    fn setup_boxes() -> Vec<DrawBox> {
-        let mut result = Vec::new();
-
-        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GREEN));
-
-        return result;
     }
 }
 
@@ -98,10 +88,24 @@ impl Transform for Gumba {
 }
 
 impl Drawer for Gumba {
-    fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
-        for box_obj in &mut self.boxes {
-            box_obj.draw(self.x, self.y, canvas).expect("ERROR");
-        }
+    fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    fn get_y(&self) -> f32 {
+        self.y
+    }
+
+    fn get_boxes(&self) -> &Vec<DrawBox> {
+        self.boxes.as_ref()
+    }
+
+    fn setup_boxes(&self) -> Vec<DrawBox> {
+        let mut result = Vec::new();
+
+        result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GRAY));
+
+        return result;
     }
 }
 
@@ -146,8 +150,9 @@ impl BoxCollider for Gumba {
         self.y_velocity = set;
     }
 }
-impl NPC for Gumba{
-}
+
+impl NPC for Gumba {}
+
 impl Character for Gumba {
     fn update(&mut self) {
         self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();

@@ -43,25 +43,23 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
     //
     // GUMBAS
     //
-
-
-    let mut turtles: Vec<Box<dyn NPC>> = Vec::new();
-
+    
+    let mut npcs: Vec<Box<dyn NPC>> = Vec::new();
 
     match Gura::new(200.0, 500.0) {
-        Some(gura) => turtles.push(Box::new(gura)),
+        Some(gura) => npcs.push(Box::new(gura)),
         None => println!("Failed to create Gura"),
     }
 
     match Gumba::new(300.0, 500.0) {
-        Ok(gumba) => turtles.push(Box::new(gumba)),
+        Ok(gumba) => npcs.push(Box::new(gumba)),
         Err(e) => println!("Failed to create Gumba: {}", e),
     }
     match Gumba::new(-300.0, 500.0) {
-        Ok(gumba) => turtles.push(Box::new(gumba)),
+        Ok(gumba) => npcs.push(Box::new(gumba)),
         Err(e) => println!("Failed to create Gumba: {}", e),
     }
-    return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, turtles);
+    return (static_map_background_boxes, static_map_boxes, static_map_colliders, player, npcs);
 }
 
 fn generate_ground_with_collider(x: f32, y: f32, x_size: f32, y_size: f32) -> (Vec<DrawBox>, MapCollider) {
