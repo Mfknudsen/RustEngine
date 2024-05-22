@@ -76,7 +76,7 @@ fn main() -> Result<(), String> {
     let static_map_boxes = generator_result.1;
     let mut static_map_colliders = generator_result.2;
     let player = generator_result.3;
-    let mut gumbas = generator_result.4;
+    let mut npcs = generator_result.4;
 
     //
     // Start values for globals
@@ -172,7 +172,7 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().add_force(0.0, GRAVITY * get_delta_time());
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.add_force(0.0, GRAVITY * get_delta_time())
         }
 
@@ -184,17 +184,17 @@ fn main() -> Result<(), String> {
         //
         // Remove defeated
         //
-        let gumbalen = gumbas.len() - 1;
+        let gumbalen = npcs.len() - 1;
         for i in 0..(gumbalen) {
-            if gumbas[gumbalen - i].should_remove() {
-                gumbas.remove(gumbalen - i);
+            if npcs[gumbalen - i].should_remove() {
+                npcs.remove(gumbalen - i);
             }
         }
 
         //
         // Continue updating characters
         //
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.update();
         }
 
@@ -203,7 +203,7 @@ fn main() -> Result<(), String> {
         //
         player.lock().unwrap().check_against_map(&mut static_map_colliders);
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.check_against_map(&mut static_map_colliders);
             g.check_against_player(&player);
         }
@@ -223,7 +223,7 @@ fn main() -> Result<(), String> {
             box_obj.draw(0.0, 0.0, &mut canvas)?; //Draws new box with changes in
         }
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.draw_on_canvas(&mut canvas);
         }
 
