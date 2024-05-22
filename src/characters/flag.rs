@@ -1,10 +1,13 @@
-use crate::characters::player::Player;
 use sdl2::{pixels::Color, render::WindowCanvas};
-use std::sync::{Arc, Mutex};
 
 use crate::{
-    get_delta_time, traits::character::Character, traits::collider::BoxCollider,
-    traits::drawer::Drawer, traits::npc::NPC, traits::transform::Transform, DrawBox,
+    DrawBox, traits::{
+        character::Character,
+        collider::BoxCollider,
+        drawer::Drawer,
+        npc::NPC,
+        transform::Transform
+    }
 };
 
 pub struct Flag {
