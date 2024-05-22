@@ -5,7 +5,6 @@ use std::{
     error::Error
 };
 
-use sdl2::sys::SDL_WindowFlags;
 use sdl2::{
     event::Event, keyboard::Keycode, pixels::Color, rect::Rect
 };
@@ -73,6 +72,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         GLOBAL_PLAYER_X_OFFSET = -player_lock.x_position() + player_lock.x_size() / 2.0 + half_x;
         GLOBAL_PLAYER_Y_OFFSET = -player_lock.y_position() / 2.0 + half_y;
     }
+
+    drop(player_lock);
 
     let (tx, rx) = mpsc::channel();
 

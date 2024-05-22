@@ -182,6 +182,7 @@ impl Character for Gumba {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 enum State {
     Idle,
     Move,
@@ -192,14 +193,14 @@ impl State {
     fn update(&mut self, gumba: &mut Gumba) {
         match self {
             State::Idle => {
-                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                gumba.boxes.iter_mut().for_each(|box_obj| {
                     box_obj.box_color = Color::GREY;
                     gumba.x += gumba.x_velocity * get_delta_time();
                     gumba.y += gumba.y_velocity * get_delta_time();
                 });
             }
             State::Move => {
-                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                gumba.boxes.iter_mut().for_each(|box_obj| {
                     box_obj.box_color = Color::YELLOW;
                 });
 
@@ -208,7 +209,7 @@ impl State {
                 gumba.y += gumba.y_velocity * get_delta_time();
             }
             State::Run => {
-                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                gumba.boxes.iter_mut().for_each(|box_obj| {
                     box_obj.box_color = Color::RED;
                 });
                 gumba.x += gumba.walk_direction * GUMBA_MOVE_SPEED*2.0 * get_delta_time();

@@ -5,7 +5,6 @@ use crate::{
     traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
     DrawBox,
 };
-use crate::characters::gura::State;
 
 const PLAYER_MOVE_SPEED: f32 = 1750.0;
 
