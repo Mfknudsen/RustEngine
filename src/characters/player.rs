@@ -5,8 +5,10 @@ use crate::{
     traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
     DrawBox,
 };
+use crate::characters::gura::State;
 
 const PLAYER_MOVE_SPEED: f32 = 1750.0;
+
 
 pub struct Player {
     x: f32,
@@ -195,4 +197,32 @@ impl Character for Player {
     }
 }
 
+
+for State impl State_Trait{
+    fn update(&mut self){
+        match self{
+            State::Idle => {
+                return;
+            }
+            State::Move => {
+                self.x += self.walk_direction * crate::characters::gura::GUMBA_MOVE_SPEED * get_delta_time();
+                self.x += self.x_velocity * get_delta_time();
+            }
+            State::Run => {
+                self.x += self.walk_direction * crate::characters::gura::GUMBA_MOVE_SPEED * get_delta_time() * 2.0;
+                self.x += self.x_velocity * get_delta_time();
+            }
+        }
+    }
+
+    fn should_remove(&self) -> bool{
+        self.dead
+    }
+
+}
+
+trait State_Trait{
+    fn update(&mut self);
+    fn should_remove(&self) -> bool;
+}
 

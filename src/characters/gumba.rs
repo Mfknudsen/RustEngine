@@ -23,6 +23,12 @@ pub struct Gumba {
     dead: bool,
 }
 
+enum State {
+    Idle,
+    Move,
+    Run,
+}
+
 impl Gumba {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Result<Self, &'static str> {
         if x_start < 0.0 || y_start < 0.0 {
@@ -177,3 +183,40 @@ impl Character for Gumba {
         self.dead
     }
 }
+
+impl State_trait for State {
+
+
+    fn update(&mut self, ) {
+        match self {
+            State::Idle => {
+                println!("Idle");
+            }
+            State::Move => {
+                println!("Move");
+            }
+            State::Run => {
+                println!("Run");
+            }
+        }
+    }
+}
+
+trait State_trait {
+    fn draw(&self,) {
+        match self {
+            State::Idle => {
+                println!("Idle");
+            }
+            State::Move => {
+                println!("Move");
+            }
+            State::Run => {
+                println!("Run");
+            }
+        }
+    }
+    fn update(&mut self);
+}
+
+

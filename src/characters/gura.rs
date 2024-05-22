@@ -28,11 +28,14 @@ pub struct Gura {
     state_timer: f32,
 }
 
-pub enum State {
+pub enum State{
     Idle,
     Move,
     Run,
 }
+
+
+
 
 impl Gura {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Option<Self> {
@@ -208,4 +211,7 @@ impl Character for Gura {
     fn should_remove(&self) -> bool {
         self.dead
     }
+
 }
+
+
