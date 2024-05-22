@@ -21,7 +21,8 @@ pub struct Gumba {
     boxes: Vec<DrawBox>,
     walk_direction: f32,
     dead: bool,
-    state: State
+    state: State,
+    name: &'static str
 }
 
 
@@ -42,6 +43,7 @@ impl Gumba {
                 walk_direction: -1.0,
                 dead: false,
                 state: State::Idle,
+                name: "Gumba"
             };
             r.boxes = r.setup_boxes();
 
