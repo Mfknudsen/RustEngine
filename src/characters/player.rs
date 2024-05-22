@@ -5,8 +5,10 @@ use crate::{
     traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
     DrawBox,
 };
+use crate::characters::gura::State;
 
 const PLAYER_MOVE_SPEED: f32 = 1750.0;
+
 
 pub struct Player {
     x: f32,
@@ -194,5 +196,4 @@ impl Character for Player {
         false
     }
 }
-
 
