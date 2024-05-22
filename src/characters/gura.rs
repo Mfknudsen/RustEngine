@@ -95,10 +95,6 @@ impl Transform for Gura {
         self.y_velocity = set;
     }
 
-    fn add_force(&mut self, x: f32, y: f32) {
-        self.x_velocity += x;
-        self.y_velocity += y;
-    }
 }
 
 impl Drawer for Gura {

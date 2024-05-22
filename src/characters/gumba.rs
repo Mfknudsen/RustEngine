@@ -21,13 +21,10 @@ pub struct Gumba {
     boxes: Vec<DrawBox>,
     walk_direction: f32,
     dead: bool,
+    state: State
 }
 
-enum State {
-    Idle,
-    Move,
-    Run,
-}
+
 
 impl Gumba {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Result<Self, &'static str> {
@@ -44,6 +41,7 @@ impl Gumba {
                 boxes: Vec::new(),
                 walk_direction: -1.0,
                 dead: false,
+                state: State::Move,
             };
             r.boxes = r.setup_boxes();
 
@@ -174,9 +172,8 @@ impl NPC for Gumba {}
 
 impl Character for Gumba {
     fn update(&mut self) {
-        self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-        self.x += self.x_velocity * get_delta_time();
-        self.y += self.y_velocity * get_delta_time();
+        let mut new_state = self.state.clone();
+        new_state.update(self);
     }
 
     fn should_remove(&self) -> bool {
@@ -184,39 +181,42 @@ impl Character for Gumba {
     }
 }
 
-impl State_trait for State {
-
-
-    fn update(&mut self, ) {
-        match self {
-            State::Idle => {
-                println!("Idle");
-            }
-            State::Move => {
-                println!("Move");
-            }
-            State::Run => {
-                println!("Run");
-            }
-        }
-    }
+#[derive(Clone)]
+enum State {
+    Idle,
+    Move,
+    Run,
 }
 
-trait State_trait {
-    fn draw(&self,) {
+impl State {
+    fn update(&mut self, gumba: &mut Gumba) {
         match self {
             State::Idle => {
-                println!("Idle");
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::GREY;
+                    gumba.x += gumba.x_velocity * get_delta_time();
+                    gumba.y += gumba.y_velocity * get_delta_time();
+                });
             }
             State::Move => {
-                println!("Move");
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::YELLOW;
+                });
+
+                gumba.x += gumba.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+                gumba.x += gumba.x_velocity * get_delta_time();
+                gumba.y += gumba.y_velocity * get_delta_time();
             }
             State::Run => {
-                println!("Run");
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::RED;
+                });
+                gumba.x += gumba.walk_direction * GUMBA_MOVE_SPEED*2.0 * get_delta_time();
+                gumba.x += gumba.x_velocity * get_delta_time();
+                gumba.y += gumba.y_velocity * get_delta_time();
             }
         }
     }
-    fn update(&mut self);
 }
 
 

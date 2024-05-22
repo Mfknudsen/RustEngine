@@ -11,5 +11,9 @@ pub trait Transform {
     fn set_x_velocity(&mut self, set: f32);
     fn set_y_velocity(&mut self, set: f32);
 
-    fn add_force(&mut self, x: f32, y: f32);
+    fn add_force(&mut self, x: f32, y: f32){
+        self.set_x_velocity(self.get_x_velocity() + x);
+        self.set_y_velocity(self.get_y_velocity() + y);
+    }
+
 }
