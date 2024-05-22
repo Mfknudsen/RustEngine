@@ -7,7 +7,7 @@ To run the code a few libraries will need to be downloaded and copied to your Ru
 
 The libraries folder for your computer may differ but will most likely be located at:
 
-C:\Users\user\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\lib
+C:\Users\user\\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\x86_64-pc-windows-msvc\lib
 
 Go to:
 https://github.com/libsdl-org/SDL/releases/tag/release-2.30.3
