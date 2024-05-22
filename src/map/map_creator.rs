@@ -46,12 +46,12 @@ pub fn generate(player_name: String) -> (Vec<DrawBox>, Vec<DrawBox>, Vec<MapColl
     
     let mut npcs: Vec<Box<dyn NPC>> = Vec::new();
 
-    match Gura::new(200.0, 500.0) {
+    match Gura::new(700.0, 500.0) {
         Some(gura) => npcs.push(Box::new(gura)),
         None => println!("Failed to create Gura"),
     }
 
-    match Gumba::new(300.0, 500.0) {
+    match Gumba::new(500.0, 500.0) {
         Ok(gumba) => npcs.push(Box::new(gumba)),
         Err(e) => println!("Failed to create Gumba: {}", e),
     }

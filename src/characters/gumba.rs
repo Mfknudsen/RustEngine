@@ -3,11 +3,13 @@ use sdl2::pixels::Color;
 use crate::{
     DrawBox,
     get_delta_time,
-    traits::character::Character,
-    traits::collider::BoxCollider,
-    traits::drawer::Drawer,
-    traits::transform::Transform,
-    traits::npc::NPC,
+    traits::{
+        collider::BoxCollider,
+        character::Character,
+        drawer::Drawer,
+        transform::Transform,
+        npc::NPC
+    }
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;

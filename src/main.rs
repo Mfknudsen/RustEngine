@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
 
     let mut builder = video_subsystem.window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT);
-    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_ALWAYS_ON_TOP as u32);
+    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_INPUT_FOCUS as u32);
 
     let window: Window = builder
         .position_centered()
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let static_map_boxes = generator_result.1;
     let mut static_map_colliders = generator_result.2;
     let player = generator_result.3;
-    let mut gumbas = generator_result.4;
+    let mut npcs = generator_result.4;
 
     //
     // Start values for globals
@@ -164,7 +164,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         //
         player.lock().unwrap().add_force(0.0, GRAVITY * get_delta_time());
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.add_force(0.0, GRAVITY * get_delta_time())
         }
 
@@ -176,17 +176,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         //
         // Remove defeated
         //
-        let gumbalen = gumbas.len() - 1;
+        let gumbalen = npcs.len() - 1;
         for i in 0..(gumbalen) {
-            if gumbas[gumbalen - i].should_remove() {
-                gumbas.remove(gumbalen - i);
+            if npcs[gumbalen - i].should_remove() {
+                npcs.remove(gumbalen - i);
             }
         }
 
         //
         // Continue updating characters
         //
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.update();
         }
 
@@ -195,7 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         //
         player.lock().unwrap().check_against_map(&mut static_map_colliders);
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.check_against_map(&mut static_map_colliders);
             g.check_against_player(&player);
         }
@@ -215,7 +215,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             box_obj.draw(0.0, 0.0, &mut canvas)?; //Draws new box with changes in
         }
 
-        for g in &mut gumbas {
+        for g in &mut npcs {
             g.draw_on_canvas(&mut canvas);
         }
 
