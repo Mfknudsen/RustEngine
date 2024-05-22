@@ -1,15 +1,12 @@
 use sdl2::pixels::Color;
+use sdl2::render::WindowCanvas;
 
 use crate::{
     DrawBox,
     get_delta_time,
     traits::{
-        collider::BoxCollider,
-        character::Character,
-        drawer::Drawer,
-        transform::Transform,
-        npc::NPC
-    }
+        character::Character, collider::BoxCollider, drawer::Drawer, npc::NPC, transform::Transform,
+    },
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -24,25 +21,28 @@ pub struct Gumba {
     boxes: Vec<DrawBox>,
     walk_direction: f32,
     dead: bool,
+    state: State
 }
+
+
 
 impl Gumba {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Result<Self, &'static str> {
         if x_start < 0.0 || y_start < 0.0 {
             Err("Value cannot be negative")
         } else {
-            let mut r =
-                Self {
-                    x: x_start,
-                    y: y_start,
-                    x_velocity: 0.0,
-                    y_velocity: 0.0,
-                    box_x_size: 50.0,
-                    box_y_size: 50.0,
-                    boxes: Vec::new(),
-                    walk_direction: -1.0,
-                    dead: false,
-                };
+            let mut r = Self {
+                x: x_start,
+                y: y_start,
+                x_velocity: 0.0,
+                y_velocity: 0.0,
+                box_x_size: 50.0,
+                box_y_size: 50.0,
+                boxes: Vec::new(),
+                walk_direction: -1.0,
+                dead: false,
+                state: State::Idle,
+            };
             r.boxes = r.setup_boxes();
 
             Ok(r)
@@ -109,6 +109,21 @@ impl Drawer for Gumba {
 
         return result;
     }
+
+    fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
+        let x = self.x;
+        let y = self.y;
+
+        for box_obj in self.get_boxes().iter() {
+            match box_obj.draw(x, y, canvas) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error: {}", e);
+                }
+            }
+        }
+        // Write names for gumbas
+    }
 }
 
 impl BoxCollider for Gumba {
@@ -157,12 +172,51 @@ impl NPC for Gumba {}
 
 impl Character for Gumba {
     fn update(&mut self) {
-        self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-        self.x += self.x_velocity * get_delta_time();
-        self.y += self.y_velocity * get_delta_time();
+        let mut new_state = self.state.clone();
+        new_state.update(self);
     }
 
     fn should_remove(&self) -> bool {
         self.dead
     }
 }
+
+#[derive(Clone)]
+enum State {
+    Idle,
+    Move,
+    Run,
+}
+
+impl State {
+    fn update(&mut self, gumba: &mut Gumba) {
+        match self {
+            State::Idle => {
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::GREY;
+                    gumba.x += gumba.x_velocity * get_delta_time();
+                    gumba.y += gumba.y_velocity * get_delta_time();
+                });
+            }
+            State::Move => {
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::YELLOW;
+                });
+
+                gumba.x += gumba.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
+                gumba.x += gumba.x_velocity * get_delta_time();
+                gumba.y += gumba.y_velocity * get_delta_time();
+            }
+            State::Run => {
+                gumba.boxes.iter_mut().for_each(|mut box_obj| {
+                    box_obj.box_color = Color::RED;
+                });
+                gumba.x += gumba.walk_direction * GUMBA_MOVE_SPEED*2.0 * get_delta_time();
+                gumba.x += gumba.x_velocity * get_delta_time();
+                gumba.y += gumba.y_velocity * get_delta_time();
+            }
+        }
+    }
+}
+
+

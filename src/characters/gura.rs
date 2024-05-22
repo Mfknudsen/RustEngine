@@ -28,11 +28,14 @@ pub struct Gura {
     state_timer: f32,
 }
 
-pub enum State {
+pub enum State{
     Idle,
     Move,
     Run,
 }
+
+
+
 
 impl Gura {
     pub(crate) fn new(x_start: f32, y_start: f32) -> Option<Self> {
@@ -92,10 +95,6 @@ impl Transform for Gura {
         self.y_velocity = set;
     }
 
-    fn add_force(&mut self, x: f32, y: f32) {
-        self.x_velocity += x;
-        self.y_velocity += y;
-    }
 }
 
 impl Drawer for Gura {
@@ -168,7 +167,7 @@ impl Character for Gura {
     fn update(&mut self) {
         //Gravity
         self.y += self.y_velocity * get_delta_time();
-
+        self.x += self.x_velocity * get_delta_time();
         //state machine
 
         //This part is so that the npc can change between states
@@ -208,4 +207,7 @@ impl Character for Gura {
     fn should_remove(&self) -> bool {
         self.dead
     }
+
 }
+
+
