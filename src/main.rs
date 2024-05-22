@@ -2,6 +2,7 @@ use std::{
     sync::{Arc, mpsc, MutexGuard},
     thread,
     time::Instant,
+    error::Error
 };
 
 use sdl2::{
@@ -43,8 +44,8 @@ enum ControlMessage {
     // Other message types...
 }
 
-fn main() -> Result<(), String> {
-    let name_input = name::get_name_input();
+fn main() -> Result<(), Box<dyn Error>> {
+    let name_input = name::get_name_input()?;
     
 
     let sdl_context: Sdl = sdl2::init()?;
@@ -134,17 +135,7 @@ fn main() -> Result<(), String> {
                 .map_err(|e| e.to_string())?;
 
             let temp = canvas.texture_creator();
-            let texture_result = surface.as_texture(&temp);
-
-            let texture = match texture_result {
-                Ok(tex) => tex,
-
-                Err(err) => {
-                    // Handle the error case
-                    eprintln!("Error converting surface to texture: {}", err);
-                    return Err(err.to_string());
-                }
-            };
+            let texture = surface.as_texture(&temp)?;
 
             let player_lock = player.lock().unwrap();
 
@@ -256,14 +247,14 @@ fn update_global_player_offset(player: &Player) {
     let half_y: f32 = (WINDOW_HEIGHT / 2) as f32;
 
     unsafe {
-        let mut towards_target_x: f32 = (-Transform::get_x(player) + half_x - 50.0) - GLOBAL_PLAYER_X_OFFSET;
+        let towards_target_x: f32 = (-Transform::get_x(player) + half_x - 50.0) - GLOBAL_PLAYER_X_OFFSET;
         GLOBAL_PLAYER_X_OFFSET += towards_target_x * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_X_OFFSET > ((WINDOW_WIDTH / 2) as f32) - 500.0 {
             GLOBAL_PLAYER_X_OFFSET = ((WINDOW_WIDTH / 2) as f32) - 500.0;
         }
 
-        let mut towards_target_y: f32 = (-Transform::get_y(player) + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
+        let towards_target_y: f32 = (-Transform::get_y(player) + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
         GLOBAL_PLAYER_Y_OFFSET += towards_target_y * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_Y_OFFSET < ((WINDOW_HEIGHT / 2) as f32) - 550.0 {

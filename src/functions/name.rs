@@ -13,27 +13,14 @@ fn handle_string(name_input: String) -> String {
     }
 }
 
-pub fn get_name_input() -> String {
+pub fn get_name_input() -> Result<String, io::Error> {
     let mut name_input = String::new();
     loop {
         print!("Write your name: ");
-        io::stdout().flush().expect("Failed to flush stdout");
-        match io::stdout().flush() {
-            Ok(_) => {
-                match io::stdin().read_line(&mut name_input) {
-                    Ok(_) => {
-                        let player_name = handle_string(name_input);
-                        println!("Your name is: {}", player_name);
-                        return player_name;
-                    }
-                    _err => {
-                        println!("Failed to read line");
-                    }
-                }
-            }
-            err => {
-                println!("Error: {:?}", err);
-            }
-        };
+        io::stdout().flush()?;
+        io::stdin().read_line(&mut name_input)?; 
+        let player_name = handle_string(name_input);
+        println!("Your name is: {}", player_name);
+        return Ok(player_name);          
     }
 }
