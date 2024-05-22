@@ -1,16 +1,15 @@
-use sdl2::{
-    pixels::Color,
-    render::WindowCanvas,
-};
+use sdl2::pixels::Color;
 
 use crate::{
     DrawBox,
     get_delta_time,
-    traits::character::Character,
-    traits::collider::BoxCollider,
-    traits::drawer::Drawer,
-    traits::transform::Transform,
-    traits::npc::NPC,
+    traits::{
+        character::Character,
+        collider::BoxCollider,
+        drawer::Drawer,
+        npc::NPC,
+        transform::Transform
+    }
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -118,17 +117,6 @@ impl Drawer for Gura {
         result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::CYAN));
 
         result
-    }
-
-    fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
-        for box_obj in &mut self.boxes {
-            match box_obj.draw(self.x, self.y, canvas) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("Error: {}", e);
-                }
-            }
-        }
     }
 }
 

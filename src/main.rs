@@ -45,13 +45,12 @@ enum ControlMessage {
 
 fn main() -> Result<(), String> {
     let name_input = name::get_name_input();
-    
 
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
 
     let mut builder = video_subsystem.window("Rust Exam | Mario Game", WINDOW_WIDTH, WINDOW_HEIGHT);
-    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_ALWAYS_ON_TOP as u32);
+    builder.set_window_flags(SDL_WindowFlags::SDL_WINDOW_INPUT_FOCUS as u32);
 
     let window: Window = builder
         .position_centered()
