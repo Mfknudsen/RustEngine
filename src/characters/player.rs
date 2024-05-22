@@ -1,9 +1,9 @@
 use sdl2::{keyboard::Keycode, pixels::Color};
 
 use crate::{
-    get_delta_time,
     traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
     DrawBox,
+    position
 };
 
 const PLAYER_MOVE_SPEED: f32 = 1750.0;
@@ -132,7 +132,7 @@ impl BoxCollider for Player {
         if self.keyboard_d {
             move_x += 1.0;
         }
-        self.x_velocity + move_x * PLAYER_MOVE_SPEED * get_delta_time()
+        self.x_velocity + move_x * PLAYER_MOVE_SPEED * position::get_delta_time()
     }
 
     fn move_y(&self) -> f32 {
@@ -185,10 +185,10 @@ impl Character for Player {
         if self.keyboard_d {
             move_x += 1.0;
         }
-        self.x += move_x * PLAYER_MOVE_SPEED * get_delta_time();
+        self.x += move_x * PLAYER_MOVE_SPEED * position::get_delta_time();
 
-        self.x += self.x_velocity * get_delta_time();
-        self.y += self.y_velocity * get_delta_time();
+        self.x += self.x_velocity * position::get_delta_time();
+        self.y += self.y_velocity * position::get_delta_time();
     }
 
     fn should_remove(&self) -> bool {

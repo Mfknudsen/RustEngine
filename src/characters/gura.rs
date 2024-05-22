@@ -2,7 +2,7 @@ use sdl2::pixels::Color;
 
 use crate::{
     DrawBox,
-    get_delta_time,
+    position,
     traits::{
         character::Character,
         collider::BoxCollider,
@@ -121,7 +121,7 @@ impl Drawer for Gura {
 
 impl BoxCollider for Gura {
     fn move_x(&self) -> f32 {
-        self.x_velocity + self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time()
+        self.x_velocity + self.walk_direction * GUMBA_MOVE_SPEED * position::get_delta_time()
     }
 
     fn move_y(&self) -> f32 {
@@ -166,12 +166,12 @@ impl NPC for Gura {}
 impl Character for Gura {
     fn update(&mut self) {
         //Gravity
-        self.y += self.y_velocity * get_delta_time();
-        self.x += self.x_velocity * get_delta_time();
+        self.y += self.y_velocity * position::get_delta_time();
+        self.x += self.x_velocity * position::get_delta_time();
         //state machine
 
         //This part is so that the npc can change between states
-        self.state_timer += get_delta_time();
+        self.state_timer += position::get_delta_time();
         if self.state_timer > 2.0 {
             // Reset the state timer
             self.state_timer = 0.0;
@@ -194,12 +194,12 @@ impl Character for Gura {
                 return;
             }
             State::Move => {
-                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time();
-                self.x += self.x_velocity * get_delta_time();
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * position::get_delta_time();
+                self.x += self.x_velocity * position::get_delta_time();
             }
             State::Run => {
-                self.x += self.walk_direction * GUMBA_MOVE_SPEED * get_delta_time() * 2.0;
-                self.x += self.x_velocity * get_delta_time();
+                self.x += self.walk_direction * GUMBA_MOVE_SPEED * position::get_delta_time() * 2.0;
+                self.x += self.x_velocity * position::get_delta_time();
             }
         }
     }
