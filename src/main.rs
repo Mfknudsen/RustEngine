@@ -1,24 +1,19 @@
 use std::{
-    sync::{Arc, mpsc, MutexGuard},
+    sync::{mpsc, Arc, MutexGuard},
     thread,
     time::Instant,
 };
 
+use sdl2::sys::SDL_WindowFlags;
 use sdl2::{
     event::Event, keyboard::Keycode, pixels::Color, rect::Rect, render::WindowCanvas,
-    Sdl, video::Window, VideoSubsystem,
+    video::Window, Sdl, VideoSubsystem,
 };
-use sdl2::sys::SDL_WindowFlags;
 
 use crate::{
     characters::player::Player,
     functions::name,
-    traits::{
-        collider::BoxCollider,
-        drawer::Drawer,
-        transform::Transform,
-        character::Character,
-    },
+    traits::{character::Character, collider::BoxCollider, drawer::Drawer, transform::Transform},
 };
 
 mod characters;
@@ -45,7 +40,6 @@ enum ControlMessage {
 
 fn main() -> Result<(), String> {
     let name_input = name::get_name_input();
-    
 
     let sdl_context: Sdl = sdl2::init()?;
     let video_subsystem: VideoSubsystem = sdl_context.video()?;
@@ -119,7 +113,6 @@ fn main() -> Result<(), String> {
             handle.join().unwrap();
         }
 
-
         if let Ok(ControlMessage::Break) = rx.try_recv() {
             break 'game;
         }
@@ -149,8 +142,11 @@ fn main() -> Result<(), String> {
             let player_lock = player.lock().unwrap();
 
             let target = Rect::new(
-                (player_lock.x_position() - player_lock.x_size() + get_global_player_x_offset() + 35.0) as i32,
-                (player_lock.y_position() - player_lock.y_size() + get_global_player_y_offset() - 15.0) as i32,
+                (player_lock.x_position() - player_lock.x_size()
+                    + get_global_player_x_offset()
+                    + 35.0) as i32,
+                (player_lock.y_position() - player_lock.y_size() + get_global_player_y_offset()
+                    - 15.0) as i32,
                 surface.width(),
                 surface.height(),
             );
@@ -171,7 +167,10 @@ fn main() -> Result<(), String> {
         //
         // Gravity force on all characters
         //
-        player.lock().unwrap().add_force(0.0, GRAVITY * get_delta_time());
+        player
+            .lock()
+            .unwrap()
+            .add_force(0.0, GRAVITY * get_delta_time());
 
         for g in &mut gumbas {
             g.add_force(0.0, GRAVITY * get_delta_time())
@@ -202,11 +201,16 @@ fn main() -> Result<(), String> {
         //
         // Check collisions
         //
-        player.lock().unwrap().check_against_map(&mut static_map_colliders);
+        player
+            .lock()
+            .unwrap()
+            .check_against_map(&mut static_map_colliders);
 
         for g in &mut gumbas {
             g.check_against_map(&mut static_map_colliders);
-            g.check_against_player(&player);
+            if g.check_against_player(&player) {
+                break 'game;
+            };
         }
 
         //
@@ -256,14 +260,16 @@ fn update_global_player_offset(player: &Player) {
     let half_y: f32 = (WINDOW_HEIGHT / 2) as f32;
 
     unsafe {
-        let mut towards_target_x: f32 = (-Transform::get_x(player) + half_x - 50.0) - GLOBAL_PLAYER_X_OFFSET;
+        let mut towards_target_x: f32 =
+            (-Transform::get_x(player) + half_x - 50.0) - GLOBAL_PLAYER_X_OFFSET;
         GLOBAL_PLAYER_X_OFFSET += towards_target_x * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_X_OFFSET > ((WINDOW_WIDTH / 2) as f32) - 500.0 {
             GLOBAL_PLAYER_X_OFFSET = ((WINDOW_WIDTH / 2) as f32) - 500.0;
         }
 
-        let mut towards_target_y: f32 = (-Transform::get_y(player) + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
+        let mut towards_target_y: f32 =
+            (-Transform::get_y(player) + player.y_size() / 2.0 + half_y) - GLOBAL_PLAYER_Y_OFFSET;
         GLOBAL_PLAYER_Y_OFFSET += towards_target_y * lerp * speed * get_delta_time();
 
         if GLOBAL_PLAYER_Y_OFFSET < ((WINDOW_HEIGHT / 2) as f32) - 550.0 {
@@ -290,30 +296,50 @@ fn get_global_player_y_offset() -> f32 {
     }
 }
 
-fn handle_event(tx: &mpsc::Sender<ControlMessage>, event: &Event, mut player_lock: MutexGuard<Player>) -> Result<(), String> {
+fn handle_event(
+    tx: &mpsc::Sender<ControlMessage>,
+    event: &Event,
+    mut player_lock: MutexGuard<Player>,
+) -> Result<(), String> {
     match event {
         Event::Quit { .. }
         | Event::KeyDown {
             keycode: Some(Keycode::Escape),
             ..
         } => {
-            tx.send(ControlMessage::Break).map_err(|e| format!("Failed to send ControlMessage::Break: {}", e))?;
+            tx.send(ControlMessage::Break)
+                .map_err(|e| format!("Failed to send ControlMessage::Break: {}", e))?;
         }
 
-        Event::KeyDown { keycode: Some(Keycode::A), .. } => {
+        Event::KeyDown {
+            keycode: Some(Keycode::A),
+            ..
+        } => {
             player_lock.update_input(Keycode::A, true);
         }
-        Event::KeyDown { keycode: Some(Keycode::D), .. } => {
+        Event::KeyDown {
+            keycode: Some(Keycode::D),
+            ..
+        } => {
             player_lock.update_input(Keycode::D, true);
         }
-        Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+        Event::KeyDown {
+            keycode: Some(Keycode::Space),
+            ..
+        } => {
             player_lock.update_input(Keycode::Space, true);
         }
 
-        Event::KeyUp { keycode: Some(Keycode::A), .. } => {
+        Event::KeyUp {
+            keycode: Some(Keycode::A),
+            ..
+        } => {
             player_lock.update_input(Keycode::A, false);
         }
-        Event::KeyUp { keycode: Some(Keycode::D), .. } => {
+        Event::KeyUp {
+            keycode: Some(Keycode::D),
+            ..
+        } => {
             player_lock.update_input(Keycode::D, false);
         }
 

@@ -1,13 +1,9 @@
 use sdl2::pixels::Color;
+use sdl2::render::WindowCanvas;
 
 use crate::{
-    DrawBox,
-    get_delta_time,
-    traits::character::Character,
-    traits::collider::BoxCollider,
-    traits::drawer::Drawer,
-    traits::transform::Transform,
-    traits::npc::NPC,
+    get_delta_time, traits::character::Character, traits::collider::BoxCollider,
+    traits::drawer::Drawer, traits::npc::NPC, traits::transform::Transform, DrawBox,
 };
 
 const GUMBA_MOVE_SPEED: f32 = 250.0;
@@ -29,18 +25,17 @@ impl Gumba {
         if x_start < 0.0 || y_start < 0.0 {
             Err("Value cannot be negative")
         } else {
-            let mut r =
-                Self {
-                    x: x_start,
-                    y: y_start,
-                    x_velocity: 0.0,
-                    y_velocity: 0.0,
-                    box_x_size: 50.0,
-                    box_y_size: 50.0,
-                    boxes: Vec::new(),
-                    walk_direction: -1.0,
-                    dead: false,
-                };
+            let mut r = Self {
+                x: x_start,
+                y: y_start,
+                x_velocity: 0.0,
+                y_velocity: 0.0,
+                box_x_size: 50.0,
+                box_y_size: 50.0,
+                boxes: Vec::new(),
+                walk_direction: -1.0,
+                dead: false,
+            };
             r.boxes = r.setup_boxes();
 
             Ok(r)
@@ -106,6 +101,21 @@ impl Drawer for Gumba {
         result.push(DrawBox::new(0.0, 0.0, 50, 50, Color::GRAY));
 
         return result;
+    }
+
+    fn draw_on_canvas(&mut self, canvas: &mut WindowCanvas) {
+        let x = self.x;
+        let y = self.y;
+
+        for box_obj in self.get_boxes().iter() {
+            match box_obj.draw(x, y, canvas) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error: {}", e);
+                }
+            }
+        }
+        // Write names for gumbas
     }
 }
 
