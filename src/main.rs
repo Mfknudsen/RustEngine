@@ -1,22 +1,19 @@
 use std::{
-    sync::{mpsc, Arc, MutexGuard},
+    sync::{mpsc, Arc},
     thread,
     error::Error
 };
 
-use sdl2::{
-    event::Event, keyboard::Keycode, pixels::Color
-};
+use sdl2::pixels::Color;
 
 use crate::{
-    characters::player::Player,
     functions::name,
     traits::{
         collider::BoxCollider,
         drawer::Drawer,
         character::Character,
     },
-    game::{setup, draw_box::DrawBox, position}
+    game::{setup, draw_box::DrawBox, position, events}
 };
 
 mod characters;
@@ -71,7 +68,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let tx = tx.clone();
             let handle = thread::spawn(move || {
                 let player_lock = player_clone.lock().unwrap();
-                if let Err(e) = handle_event(&tx, &event, player_lock) {
+                if let Err(e) = events::handle_event(&tx, &event, player_lock) {
                     eprintln!("{}", e);
                 }
             });
@@ -161,56 +158,4 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(()) //Return OK / End of program
-}
-
-fn handle_event(
-    tx: &mpsc::Sender<ControlMessage>,
-    event: &Event,
-    mut player_lock: MutexGuard<Player>,
-) -> Result<(), String> {
-    match event {
-        Event::Quit { .. }
-        | Event::KeyDown {
-            keycode: Some(Keycode::Escape),
-            ..
-        } => {
-            tx.send(ControlMessage::Break)
-                .map_err(|e| format!("Failed to send ControlMessage::Break: {}", e))?;
-        }
-
-        Event::KeyDown {
-            keycode: Some(Keycode::A),
-            ..
-        } => {
-            player_lock.update_input(Keycode::A, true);
-        }
-        Event::KeyDown {
-            keycode: Some(Keycode::D),
-            ..
-        } => {
-            player_lock.update_input(Keycode::D, true);
-        }
-        Event::KeyDown {
-            keycode: Some(Keycode::Space),
-            ..
-        } => {
-            player_lock.update_input(Keycode::Space, true);
-        }
-
-        Event::KeyUp {
-            keycode: Some(Keycode::A),
-            ..
-        } => {
-            player_lock.update_input(Keycode::A, false);
-        }
-        Event::KeyUp {
-            keycode: Some(Keycode::D),
-            ..
-        } => {
-            player_lock.update_input(Keycode::D, false);
-        }
-
-        _ => {}
-    }
-    Ok(())
 }
