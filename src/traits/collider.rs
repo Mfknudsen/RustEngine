@@ -161,7 +161,7 @@ pub trait BoxCollider {
     }
 
     //1 and 2 is one line, 3 and 4 is one line
-    fn line_intersect_line(&self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, x4: i32, y4: i32) -> bool {
+    fn line_intersect_line(&self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, _x4: i32, y4: i32) -> bool {
         if (x1 < x3 && x2 < x3) ||
             (x1 > x3 && x2 > x3) {
             return false;

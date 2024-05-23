@@ -62,11 +62,11 @@ impl Transform for Flag {
         0.0
     }
 
-    fn set_x_velocity(&mut self, set: f32) {}
+    fn set_x_velocity(&mut self, _set: f32) {}
 
-    fn set_y_velocity(&mut self, set: f32) {}
+    fn set_y_velocity(&mut self, _set: f32) {}
 
-    fn add_force(&mut self, x: f32, y: f32) {}
+    fn add_force(&mut self, _x: f32, _y: f32) {}
 }
 
 impl Drawer for Flag {
@@ -121,9 +121,9 @@ impl BoxCollider for Flag {
         self.y
     }
 
-    fn set_x_position(&mut self, set: f32) {}
+    fn set_x_position(&mut self, _set: f32) {}
 
-    fn set_y_position(&mut self, set: f32) {}
+    fn set_y_position(&mut self, _set: f32) {}
 
     fn x_size(&self) -> f32 {
         self.box_x_size
@@ -133,9 +133,9 @@ impl BoxCollider for Flag {
         self.box_y_size
     }
 
-    fn set_x_velocity(&mut self, set: f32) {}
+    fn set_x_velocity(&mut self, _set: f32) {}
 
-    fn set_y_velocity(&mut self, set: f32) {}
+    fn set_y_velocity(&mut self, _set: f32) {}
 }
 
 impl NPC for Flag {}
